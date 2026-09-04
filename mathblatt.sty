@@ -1,5 +1,5 @@
 % mathblatt.sty – Vorlage für Nachhilfe-Arbeitsblätter, Stufe 1 (Kern Sek I)
-% Version 2026-09-04b (Achsen getrennt skaliert, Aufgabe umbruchfest)
+% Version 2026-09-04c (Kasten mit langen Argumenten, Wertetabelle schliesst Absatz)
 %
 % Verwendung:  \usepackage{mathblatt}   (Datei neben der .tex-Datei)
 % Kompilieren mit  xelatex  (saubere Schrift, Umlaute, €, Textextraktion);
@@ -57,7 +57,7 @@
 
 % Übersichtskasten: \uebersichtskasten{Text}  oder  \uebersichtskasten[Grafik]{Text}
 % Mit Grafik: Text links (60 %), Grafik rechts, beide oben bündig.
-\NewDocumentCommand{\uebersichtskasten}{o m}{%
+\NewDocumentCommand{\uebersichtskasten}{+o +m}{%
   \begin{tcolorbox}[colback=mbkasten,colframe=mbgrau,boxrule=0.4pt,arc=1pt,
                     left=4pt,right=4pt,top=4pt,bottom=4pt]
   \IfNoValueTF{#1}{#2}{%
@@ -157,7 +157,7 @@
   \expandafter\mbtabstart\expandafter{\mbpre}\hline
   $#2$ \mbkopf \\ \hline
   \IfNoValueTF{#1}{\rule{0pt}{\mbzeile}$#3$ \mbleer \\ \hline}{$#3$ \mbwerte \\ \hline}
-  \end{tabular}\endgroup}
+  \end{tabular}\endgroup\par\addvspace{4pt}}
 \newcounter{mbn}
 \newcommand{\mbtabstart}[1]{\begin{tabular}{#1}}
 % Leere Tabelle zum Selbstanlegen: \wertetabelleleer{x}{y}{5}
@@ -166,7 +166,7 @@
   \begin{tabular}{|>{\columncolor{mbkasten}}c|*{#3}{p{\mbzell}|}}\hline
   $#1$ & \multicolumn{#3}{c|}{} \\ \hline
   \rule{0pt}{\mbzeile}$#2$ & \multicolumn{#3}{c|}{} \\ \hline
-  \end{tabular}\endgroup}
+  \end{tabular}\endgroup\par\addvspace{4pt}}
 
 % ---------------------------------------------------------------------------
 % D  Koordinatensystem 2D
