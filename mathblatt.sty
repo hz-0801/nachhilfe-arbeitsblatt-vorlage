@@ -1,5 +1,5 @@
 % mathblatt.sty – Vorlage für Nachhilfe-Arbeitsblätter, Stufe 1 (Kern Sek I)
-% Version 2026-09-04c (Kasten mit langen Argumenten, Wertetabelle schliesst Absatz)
+% Version 2026-09-04d (gerade mit steuerbarer Labelposition)
 %
 % Verwendung:  \usepackage{mathblatt}   (Datei neben der .tex-Datei)
 % Kompilieren mit  xelatex  (saubere Schrift, Umlaute, €, Textextraktion);
@@ -214,16 +214,27 @@
     \clip (\ksxmin,\ksymin) rectangle (\ksxmax,\ksymax);
 }{\end{scope}\end{tikzpicture}}
 % Objekte im ksys
-\newcommand{\gerade}[3]{%
-  \pgfmathsetmacro{\mblx}{\ksxmax-0.6*\ksxstep}%
-  \pgfmathsetmacro{\mbly}{#1*\mblx+#2}%
-  \pgfmathparse{(\mbly>\ksymax-0.3*\ksystep) || (\mbly<\ksymin+0.3*\ksystep)}%
-  \ifnum\pgfmathresult=1
-    \pgfmathsetmacro{\mbly}{ifthenelse(#1>0,\ksymax-0.5*\ksystep,\ksymin+0.5*\ksystep)}%
-    \pgfmathsetmacro{\mblx}{(\mbly-#2)/(#1+0.000001)}%
-  \fi
-  \draw[line width=0.8pt,domain=\ksxmin:\ksxmax,samples=2] plot (\x,{#1*\x+#2});
-  \node[fill=white,inner sep=1pt,font=\small] at (\mblx,\mbly) {$#3$};}
+\newcommand{\gerade}{}
+% \gerade{m}{n}{Label}  oder  \gerade[x]{m}{n}{Label} – x = Stelle, an der das
+% Label sitzt (Achseneinheiten). Bei mehreren Geraden in einem System die Labels
+% mit verschiedenen x auseinanderziehen, statt die Aufgabenwerte zu aendern.
+\RenewDocumentCommand{\gerade}{o m m m}{%
+  \IfNoValueTF{#1}{%
+    \pgfmathsetmacro{\mblx}{\ksxmax-0.6*\ksxstep}%
+    \pgfmathsetmacro{\mbly}{#2*\mblx+#3}%
+    \pgfmathparse{(\mbly>\ksymax-0.3*\ksystep) || (\mbly<\ksymin+0.3*\ksystep)}%
+    \ifnum\pgfmathresult=1
+      \pgfmathsetmacro{\mbly}{ifthenelse(#2>0,\ksymax-0.5*\ksystep,\ksymin+0.5*\ksystep)}%
+      \pgfmathsetmacro{\mblx}{(\mbly-#3)/(#2+0.000001)}%
+    \fi}%
+   {\pgfmathsetmacro{\mblx}{#1}\pgfmathsetmacro{\mbly}{#2*\mblx+#3}%
+    \pgfmathparse{(\mbly>\ksymax-0.3*\ksystep) || (\mbly<\ksymin+0.3*\ksystep)}%
+    \ifnum\pgfmathresult=1
+      \pgfmathsetmacro{\mbly}{ifthenelse(#2>0,\ksymax-0.5*\ksystep,\ksymin+0.5*\ksystep)}%
+      \pgfmathsetmacro{\mblx}{(\mbly-#3)/(#2+0.000001)}%
+    \fi}%
+  \draw[line width=0.8pt,domain=\ksxmin:\ksxmax,samples=2] plot (\x,{#2*\x+#3});
+  \node[fill=white,inner sep=1pt,font=\small] at (\mblx,\mbly) {$#4$};}
 \newcommand{\punkt}[3]{\fill (#1,#2) circle (1.6pt) node[above right,font=\small] {$#3$};}
 \newcommand{\steigungsdreieck}[3]{%
   \draw[mbgrau,dashed] (#1,#2) -- ({#1+1},#2) -- ({#1+1},{#2+#3});
