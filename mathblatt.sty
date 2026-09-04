@@ -1,5 +1,5 @@
 % mathblatt.sty – Vorlage für Nachhilfe-Arbeitsblätter, Stufe 1 (Kern Sek I)
-% Version 2026-09-04d (gerade mit steuerbarer Labelposition)
+% Version 2026-09-04e (Listenmakros mnliste, nullstellenliste, punktprobenliste)
 %
 % Verwendung:  \usepackage{mathblatt}   (Datei neben der .tex-Datei)
 % Kompilieren mit  xelatex  (saubere Schrift, Umlaute, €, Textextraktion);
@@ -122,6 +122,35 @@
   \begin{tabular}{@{\hspace{0.4em}}l@{\hspace{0.4em}}l@{\hspace{1.2em}}l@{}}}{\end{tabular}\par}
 \newcommand{\gz}[3]{\stepcounter{teil}#1) & #2 & #3 \\}
 \newcommand{\gzs}[3]{\stepcounter{teil}$\star$\,#1) & #2 & #3 \\}
+
+% Listenmakros: eine Zeile statt eines geruest-Blocks. Eintraege mit Komma getrennt; Dezimalkomma als 0{,}5 schreiben.
+% Optionales Argument = Nummer der ersten Sternaufgabe (Sterne stehen immer am Ende).
+%   \mnliste[7]{2x+3; 5x-1; ...}          a) y = 2x+3    m = __  n = __
+%   \nullstellenliste[7]{x-4; 2x-6; ...}  a) y = x-4     x_0 = __
+%   \punktprobenliste[7]{2x-1/A(3|5); ...} a) y = 2x-1, A(3|5)   ja / nein
+\newcounter{mbli}
+\newcommand{\mbtabkopf}{\begin{tabular}{@{\hspace{0.4em}}l@{\hspace{0.4em}}l@{\hspace{1.2em}}l@{}}}
+\NewDocumentCommand{\mnliste}{o m}{%
+  \def\mbrows{}\setcounter{mbli}{0}%
+  \foreach \e in {#2}{\stepcounter{mbli}%
+    \IfNoValueTF{#1}{\def\mbs{}}{\ifnum\value{mbli}<#1 \def\mbs{}\else\def\mbs{$\star$\,}\fi}%
+    \edef\mbz{\mbs\alph{mbli})}%
+    \xappto\mbrows{\mbz & $y = \e$ & \noexpand\feld{m}\noexpand\feld{n} \noexpand\\}}%
+  \par\nopagebreak\mbtabkopf\mbrows\end{tabular}\par\addvspace{3pt}}
+\NewDocumentCommand{\nullstellenliste}{o m}{%
+  \def\mbrows{}\setcounter{mbli}{0}%
+  \foreach \e in {#2}{\stepcounter{mbli}%
+    \IfNoValueTF{#1}{\def\mbs{}}{\ifnum\value{mbli}<#1 \def\mbs{}\else\def\mbs{$\star$\,}\fi}%
+    \edef\mbz{\mbs\alph{mbli})}%
+    \xappto\mbrows{\mbz & $y = \e$ & \noexpand\feldl{x_0} \noexpand\\}}%
+  \par\nopagebreak\mbtabkopf\mbrows\end{tabular}\par\addvspace{3pt}}
+\NewDocumentCommand{\punktprobenliste}{o m}{%
+  \def\mbrows{}\setcounter{mbli}{0}%
+  \foreach \t/\pk in {#2}{\stepcounter{mbli}%
+    \IfNoValueTF{#1}{\def\mbs{}}{\ifnum\value{mbli}<#1 \def\mbs{}\else\def\mbs{$\star$\,}\fi}%
+    \edef\mbz{\mbs\alph{mbli})}%
+    \xappto\mbrows{\mbz & $y = \t$, \noexpand\quad $\pk$ & \noexpand\janein \noexpand\\}}%
+  \par\nopagebreak\mbtabkopf\mbrows\end{tabular}\par\addvspace{3pt}}
 
 % Ankreuzen
 \newcommand{\janein}{$\square$ ja \quad $\square$ nein}
