@@ -1,8 +1,10 @@
 % mathblatt.sty – Vorlage für Nachhilfe-Arbeitsblätter, Stufe 3 (Sek I und Oberstufe)
-% Version 2026-09-05d (Stufe 2: ksys-leit, Achsenzahlen, teil-Zaehler, Koerper, rquader/rpyramide,
+% Version 2026-09-05e (Stufe 2: ksys-leit, Achsenzahlen, teil-Zaehler, Koerper, rquader/rpyramide,
 %                      boxplots, histogramm, kreis, Winkelfiguren, Dezimalkomma;
 %                      Block 5 Analysis: ableitungspaar, flaeche, flaechezwischen, tangentean,
-%                      hochpunkt/tiefpunkt/wendepunkt, asymptote; Kurvenlabel neu positioniert)
+%                      hochpunkt/tiefpunkt/wendepunkt, asymptote; Kurvenlabel neu positioniert;
+%                      Block 6 Stochastik: baumdrei, kreisdiagramm, vierfeldertafel,
+%                      binomialverteilung, normalverteilung; histogramm mit titel)
 %
 % Verwendung:  \usepackage{mathblatt}   (Datei neben der .tex-Datei)
 % Kompilieren mit  xelatex  (saubere Schrift, Umlaute, €, Textextraktion);
@@ -11,7 +13,7 @@
 % Inhalt; Layout, Grafikgrößen und Ausrichtung sind hier festgelegt.
 %
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{mathblatt}[2026/09/05 Nachhilfe-Arbeitsblatt 2026-09-05d]
+\ProvidesPackage{mathblatt}[2026/09/05 Nachhilfe-Arbeitsblatt 2026-09-05e]
 
 \RequirePackage[a4paper,margin=18mm,top=16mm,bottom=18mm]{geometry}
 \RequirePackage{iftex}
@@ -594,12 +596,12 @@
 % \histogramm{0:10/4, 10:20/9, 20:40/6}                 Höhe = Häufigkeit
 % \histogramm[dichte]{0:10/4, 10:20/9, 20:40/6}         Höhe = Häufigkeit / Klassenbreite
 % \histogramm{0:10/, 10:20/, 20:40/}                    nur Achsen und Klassengrenzen
-% Schlüssel: ymax, ystep, karo, xlabel, ylabel, dichte
+% Schlüssel: ymax, ystep, karo, xlabel, ylabel, dichte, titel (Textmodus, über dem Diagramm)
 \pgfkeys{/hst/.is family, /hst,
   ymax/.estore in=\hsymax, ystep/.estore in=\hsystep, xstep/.estore in=\hsxstep,
   karo/.estore in=\hskaro, xlabel/.estore in=\hsxlabel, ylabel/.estore in=\hsylabel,
-  dichte/.is if=mbhsdichte,
-  default/.style={ymax=10,ystep=1,xstep=10,karo=0.5,xlabel=$x$,ylabel=$h$}}
+  dichte/.is if=mbhsdichte, titel/.estore in=\hstitel,
+  default/.style={ymax=10,ystep=1,xstep=10,karo=0.5,xlabel=$x$,ylabel=$h$,titel=}}
 \newif\ifmbhsdichte
 \NewDocumentCommand{\histogramm}{O{} m}{%
   \mbhsdichtefalse\pgfkeys{/hst,default,#1}%
@@ -620,6 +622,8 @@
       \fi}%
     \draw[-{Stealth[length=2mm]},line width=0.6pt] (\hsxa,0) -- (\hsxpfeil,0) node[right] {\small\hsxlabel};
     \draw[-{Stealth[length=2mm]},line width=0.6pt] (\hsxa,0) -- (\hsxa,\hsypfeil) node[above] {\small\hsylabel};
+    \ifblank{\hstitel}{}{\pgfmathsetmacro{\hsty}{\hsypfeil+0.45/\hsyk}%
+      \node[above,font=\small\bfseries,inner sep=2pt] at ({(\hsxa+\hsxb)/2},\hsty) {\hstitel};}
     \foreach \k/\h [count=\i] in {#2}{\expandafter\mbrzwei\k\relax
       \ifnum\i=1 \draw (\mbrtmin,{0.12*\hsystep}) -- (\mbrtmin,{-0.12*\hsystep})
         node[below,inner sep=1.5pt] {\mbtf$\pgfmathprintnumber{\mbrtmin}$};\fi
@@ -974,5 +978,146 @@
     \pgfmathsetmacro{\mbasx}{\ksxmax-0.15*(\ksxmax-\ksxmin)}%
     \mbfunklabel{\mbasr}{#2}{\ksxmin}{\mbasx}%
   \fi}
+
+% ---------------------------------------------------------------------------
+% M  Stochastik: dreistufiger Baum, Kreisdiagramm, Vierfeldertafel,
+%    Binomialverteilung, Normalverteilung (freistehend)
+% ---------------------------------------------------------------------------
+% \baumdrei{S1}{S2 nach 1. Ast}{S2 nach 2. Ast}{S3 nach 1-1}{S3 nach 1-2}{S3 nach 2-1}{S3 nach 2-2}
+%   Listen wie bei \baumzwei (Label/Wahrscheinlichkeit, leer = Feld). Zwei Aeste je Stufe.
+% \baumdreigleich{R/0.4,B/0.6}     alle Stufen gleich (Ziehen mit Zuruecklegen)
+\newcommand{\mbaeste}[6]{% Startkoordinate, y des Starts, x der Ziele, Liste, Abstand, Praefix
+  \pgfmathtruncatemacro{\mban}{0}%
+  \foreach \l/\p in #4{\xdef\mban{\the\numexpr\mban+1}}%
+  \foreach \l/\p [count=\mbc] in #4{%
+    \pgfmathsetmacro{\yy}{#2+#5*((\mban+1)/2-\mbc)}%
+    \expandafter\xdef\csname mby#6\mbc\endcsname{\yy}%
+    \coordinate (#6\mbc) at (#3,\yy);
+    \draw (#1) -- (#6\mbc) node[wk,pos=0.5] {\ifx\p\empty\underline{\hspace{5mm}}\else$\p$\fi};
+    \node[ast] at (#6\mbc) {$\l$};}}
+\NewDocumentCommand{\baumdrei}{m m m m m m m}{%
+  \begin{tikzpicture}[baseline=(current bounding box.north),line width=0.6pt,
+     ast/.style={font=\small,fill=white,inner sep=1.5pt}, wk/.style={font=\scriptsize,fill=white,inner sep=1pt}]
+    \coordinate (S) at (0,0);
+    \mbaeste{S}{0}{2.4}{{#1}}{3}{A}%
+    \foreach \i in {1,2}{\ifnum\i=1 \def\mbl{#2}\else\def\mbl{#3}\fi
+      \mbaeste{A\i}{\csname mbyA\i\endcsname}{4.8}{\mbl}{1.5}{B\i}}%
+    \foreach \i/\j/\k in {1/1/1,1/2/2,2/1/3,2/2/4}{%
+      \ifcase\k\or\def\mbl{#4}\or\def\mbl{#5}\or\def\mbl{#6}\or\def\mbl{#7}\fi
+      \mbaeste{B\i\j}{\csname mbyB\i\j\endcsname}{7.2}{\mbl}{0.75}{C\i\j}}%
+  \end{tikzpicture}}
+\newcommand{\baumdreigleich}[1]{\baumdrei{#1}{#1}{#1}{#1}{#1}{#1}{#1}}
+
+% \kreisdiagramm[r]{Label/Wert, ...}   Winkel proportional zu den Werten (Prozent oder absolut),
+%   Label im Textmodus außen; leeres Label {} = Sektor ohne Text; leere Liste = Kreis mit Mittelpunkt.
+%   Radius in cm, Voreinstellung 1.8. Sektoren beginnen oben und laufen im Uhrzeigersinn.
+\NewDocumentCommand{\kreisdiagramm}{O{1.8} m}{%
+  \begin{tikzpicture}[baseline=(current bounding box.north),line width=0.6pt]
+    \ifblank{#2}{\draw (0,0) circle (#1); \fill (0,0) circle (1.4pt);}{%
+      \pgfmathsetmacro{\mbsum}{0}%
+      \foreach \l/\w in {#2}{\pgfmathsetmacro{\mbsum}{\mbsum+\w}\xdef\mbsum{\mbsum}}%
+      \xdef\mbwa{90}%
+      \foreach \l/\w [count=\i] in {#2}{%
+        \pgfmathsetmacro{\mbwb}{\mbwa-360*\w/\mbsum}%
+        \pgfmathsetmacro{\mbg}{0.96-0.14*mod(\i-1,4)}%
+        \filldraw[fill=black!\fpeval{round((1-\mbg)*100)}] (0,0) -- (\mbwa:#1) arc (\mbwa:\mbwb:#1) -- cycle;
+        \ifblank{\l}{}{\pgfmathsetmacro{\mbwm}{(\mbwa+\mbwb)/2}%
+          \node[font=\small,anchor={\mbwm+180}] at (\mbwm:{#1+0.15}) {\l};}
+        \xdef\mbwa{\mbwb}}%
+      \draw (0,0) circle (#1);}
+  \end{tikzpicture}}
+
+% \vierfeldertafel{A}{B}{n11,n12,n1s,n21,n22,n2s,ns1,ns2,n}   zeilenweise: B / nicht B / Summe,
+%   spaltenweise A / nicht A / Summe. Leere Eintraege lassen das Feld frei, {} alles leer.
+\def\mbvfneun#1,#2,#3,#4,#5,#6,#7,#8,#9\relax{\def\vfa{#1}\def\vfb{#2}\def\vfc{#3}\def\vfd{#4}%
+  \def\vfe{#5}\def\vff{#6}\def\vfg{#7}\def\vfh{#8}\def\vfi{#9}}
+\newcommand{\mbvfz}[1]{\ifblank{#1}{\rule{0pt}{0.65cm}}{\rule{0pt}{0.65cm}$#1$}}
+\NewDocumentCommand{\vierfeldertafel}{m m m}{%
+  \ifblank{#3}{\mbvfneun,,,,,,,,\relax}{\mbvfneun#3\relax}%
+  \begingroup\renewcommand{\arraystretch}{1.3}%
+  \begin{tabular}{|>{\columncolor{mbkasten}}c|>{\centering\arraybackslash}p{1.5cm}|>{\centering\arraybackslash}p{1.5cm}|>{\centering\arraybackslash}p{1.5cm}|}\hline
+  \cellcolor{mbkasten} & \cellcolor{mbkasten}$#1$ & \cellcolor{mbkasten}$\overline{#1}$ & \cellcolor{mbkasten} \\ \hline
+  $#2$ & \mbvfz{\vfa} & \mbvfz{\vfb} & \mbvfz{\vfc} \\ \hline
+  $\overline{#2}$ & \mbvfz{\vfd} & \mbvfz{\vfe} & \mbvfz{\vff} \\ \hline
+  & \mbvfz{\vfg} & \mbvfz{\vfh} & \mbvfz{\vfi} \\ \hline
+  \end{tabular}\endgroup\par\addvspace{4pt}}
+
+% \binomialverteilung[Schlüssel]{n}{p}   Stabdiagramm P(X=k) für k = von..bis (Voreinstellung 0..n).
+%   Schlüssel: von, bis, ymax, ystep (ohne Angabe automatisch), karo (0.5), markiere=a:b (Stäbe a..b dunkel).
+%   Bei n > 25 ohne von/bis: nur k mit P(X=k) >= 0.0005, Warnung im Log. Rechnung über Logarithmen.
+%   Breite = (bis-von+1) Karos; über 30 Stäbe passen nicht in die Zeile.
+\pgfkeys{/bin/.is family, /bin,
+  von/.estore in=\bnvon, bis/.estore in=\bnbis, ymax/.estore in=\bnymax, ystep/.estore in=\bnystep,
+  karo/.estore in=\bnkaro, markiere/.estore in=\bnmark,
+  default/.style={von=0,bis=,ymax=,ystep=,karo=0.5,markiere=}}
+\newcommand{\mbbinp}[3]{% n, p, k -> \mbbp
+  \pgfmathsetmacro{\mblc}{0}%
+  \pgfmathtruncatemacro{\mbkk}{#3}%
+  \ifnum\mbkk>0 \foreach \i in {1,...,\mbkk}{\pgfmathsetmacro{\mblc}{\mblc+ln(#1-\mbkk+\i)-ln(\i)}\xdef\mblc{\mblc}}\fi
+  \pgfmathsetmacro{\mble}{\mblc+\mbkk*ln(#2)+(#1-\mbkk)*ln(1-(#2))}%
+  \pgfmathsetmacro{\mbbp}{ifthenelse(\mble<-11,0,exp(\mble))}}
+\NewDocumentCommand{\binomialverteilung}{O{} m m}{%
+  \pgfkeys{/bin,default,#1}%
+  \ifx\bnbis\empty\edef\bnbis{#2}%
+    \ifnum#2>25 % grosses n: Bereich auf P(X=k) >= 0.0005 einschraenken
+      \def\bnvon{}\foreach \k in {0,...,#2}{\mbbinp{#2}{#3}{\k}%
+        \pgfmathparse{\mbbp>=0.0005}\ifdim\pgfmathresult pt>0pt
+          \ifx\bnvon\empty\xdef\bnvon{\k}\fi\xdef\bnbis{\k}\fi}%
+      \PackageWarning{mathblatt}{binomialverteilung n=#2: zeige k=\bnvon..\bnbis\space (P(X=k)>=0.0005); von/bis setzen fuer anderen Bereich}%
+    \fi\fi
+  \pgfmathsetmacro{\bnpmax}{0}%
+  \foreach \k in {\bnvon,...,\bnbis}{\mbbinp{#2}{#3}{\k}\pgfmathsetmacro{\bnpmax}{max(\bnpmax,\mbbp)}\xdef\bnpmax{\bnpmax}}%
+  \ifx\bnystep\empty\pgfmathsetmacro{\bnystep}{ifthenelse(\bnpmax>0.25,0.05,ifthenelse(\bnpmax>0.1,0.02,0.01))}\fi
+  \ifx\bnymax\empty\pgfmathsetmacro{\bnymax}{ceil(\bnpmax/\bnystep+0.3)*\bnystep}\fi
+  \pgfmathsetmacro{\bnyk}{\bnkaro/\bnystep}%
+  \pgfmathsetmacro{\bnxa}{\bnvon-0.5}\pgfmathsetmacro{\bnxb}{\bnbis+0.5}%
+  \pgfmathsetmacro{\bnypfeil}{\bnymax+0.6*\bnystep}%
+  \pgfmathtruncatemacro{\bnl}{max(1,ceil((\bnbis-\bnvon)/25))}% jede l-te Zahl
+  \ifx\bnmark\empty\def\bnma{-1}\def\bnmb{-1}\else\expandafter\mbrzwei\bnmark\relax\let\bnma\mbrtmin\let\bnmb\mbrtmax\fi
+  \begin{tikzpicture}[x=\bnkaro cm,y=\bnyk cm,baseline=(current bounding box.north)]
+    \draw[mbgitter,line width=0.3pt] (\bnxa,0) grid[xstep=1,ystep=\bnystep] (\bnxb,\bnymax);
+    \foreach \k in {\bnvon,...,\bnbis}{\mbbinp{#2}{#3}{\k}%
+      \pgfmathparse{(\k>=\bnma)&&(\k<=\bnmb)}\ifdim\pgfmathresult pt>0pt
+        \filldraw[fill=mbgrau,line width=0.5pt] (\k-0.3,0) rectangle (\k+0.3,\mbbp);
+      \else\filldraw[fill=mbkasten,line width=0.5pt] (\k-0.3,0) rectangle (\k+0.3,\mbbp);\fi
+      \pgfmathtruncatemacro{\mbrest}{mod(\k,\bnl)}%
+      \ifnum\mbrest=0 \node[below,inner sep=2pt,font=\scriptsize] at (\k,0) {$\k$};\fi}
+    \draw[-{Stealth[length=2mm]},line width=0.6pt] (\bnxa,0) -- (\bnxb+0.7,0) node[right] {\small$k$};
+    \draw[-{Stealth[length=2mm]},line width=0.6pt] (\bnxa,0) -- (\bnxa,\bnypfeil) node[above right,inner sep=1pt] {\small$P(X=k)$};
+    \pgfmathsetmacro{\bnya}{\bnystep}\pgfmathsetmacro{\bnyb}{2*\bnystep}%
+    \foreach \y in {\bnya,\bnyb,...,\bnymax}{%
+      \draw (\bnxa-0.15,\y) -- (\bnxa+0.15,\y) node[left,inner sep=3pt,font=\scriptsize] {$\pgfmathprintnumber{\y}$};}
+  \end{tikzpicture}}
+
+% \normalverteilung[Schlüssel]{mu}{sigma}   Dichtekurve mit x-Achse; Schlüssel: xstep (Voreinstellung
+%   sigma), xmin/xmax (mu ± 3.5 sigma), karo (0.8), von=a, bis=b (Fläche schraffiert grau; nur von
+%   oder nur bis = einseitig), xlabel. Höhe des Maximums 4 Karos, y-Achse ohne Zahlen.
+\pgfkeys{/nv/.is family, /nv,
+  xmin/.estore in=\nvxmin, xmax/.estore in=\nvxmax, xstep/.estore in=\nvxstep, karo/.estore in=\nvkaro,
+  von/.estore in=\nvvon, bis/.estore in=\nvbis, xlabel/.estore in=\nvxlabel,
+  default/.style={xmin=,xmax=,xstep=,karo=0.8,von=,bis=,xlabel=$x$}}
+\NewDocumentCommand{\normalverteilung}{O{} m m}{%
+  \pgfkeys{/nv,default,#1}%
+  \ifx\nvxstep\empty\edef\nvxstep{#3}\fi
+  \ifx\nvxmin\empty\pgfmathsetmacro{\nvxmin}{(#2)-3.5*(#3)}\fi
+  \ifx\nvxmax\empty\pgfmathsetmacro{\nvxmax}{(#2)+3.5*(#3)}\fi
+  \ifx\nvvon\empty\let\nvvon\nvxmin\fi
+  \ifx\nvbis\empty\let\nvbis\nvxmax\fi
+  \pgfmathsetmacro{\nvxk}{\nvkaro/\nvxstep}%
+  \pgfmathsetmacro{\nvyk}{4*\nvkaro}% Maximum der Kurve = 4 Karos
+  \pgfmathsetmacro{\nvxpfeil}{\nvxmax+0.4*\nvxstep}%
+  \pgfmathsetmacro{\nvga}{ceil(\nvxmin/\nvxstep)*\nvxstep}\pgfmathsetmacro{\nvgb}{\nvga+\nvxstep}%
+  \pgfmathsetmacro{\nvgz}{floor(\nvxmax/\nvxstep)*\nvxstep}%
+  \begin{tikzpicture}[x=\nvxk cm,y=\nvyk cm,baseline=(current bounding box.north)]
+    \draw[mbgitter,line width=0.3pt] (\nvga,0) grid[xstep=\nvxstep,ystep=0.25] (\nvgz,1.25);
+    \ifdim\nvvon pt=\nvxmin pt\ifdim\nvbis pt=\nvxmax pt\else
+      \fill[mbgrau,fill opacity=0.35,domain=\nvvon:\nvbis,samples=60] plot (\x,{exp(-0.5*((\x-(#2))/(#3))^2)}) -- (\nvbis,0) -- (\nvvon,0) -- cycle;\fi
+    \else
+      \fill[mbgrau,fill opacity=0.35,domain=\nvvon:\nvbis,samples=60] plot (\x,{exp(-0.5*((\x-(#2))/(#3))^2)}) -- (\nvbis,0) -- (\nvvon,0) -- cycle;\fi
+    \draw[line width=0.8pt,domain=\nvxmin:\nvxmax,samples=120,smooth] plot (\x,{exp(-0.5*((\x-(#2))/(#3))^2)});
+    \draw[dashed,line width=0.5pt] (#2,0) -- (#2,1);
+    \draw[-{Stealth[length=2mm]},line width=0.6pt] (\nvxmin,0) -- (\nvxpfeil,0) node[right] {\small\nvxlabel};
+    \foreach \x in {\nvga,\nvgb,...,\nvgz}{\draw (\x,0.03) -- (\x,-0.03) node[below,inner sep=2pt,font=\scriptsize] {$\pgfmathprintnumber{\x}$};}
+  \end{tikzpicture}}
 
 \endinput

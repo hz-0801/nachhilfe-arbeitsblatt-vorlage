@@ -1,5 +1,5 @@
 mathblatt.sty – Anleitung (Stufe 3)
-Gehört zu Vorlagenversion 2026-09-05d. Die Version steht in Zeile 2 der `mathblatt.sty`. Weichen beide ab, gilt die Vorlage: Makros, die sie nicht kennt, benutzt du nicht, und du meldest die Abweichung in einer Zeile im Ausgabeblock.
+Gehört zu Vorlagenversion 2026-09-05e. Die Version steht in Zeile 2 der `mathblatt.sty`. Weichen beide ab, gilt die Vorlage: Makros, die sie nicht kennt, benutzt du nicht, und du meldest die Abweichung in einer Zeile im Ausgabeblock.
  
 Datei `mathblatt.sty` neben die .tex-Datei legen, `\usepackage{mathblatt}` im Kopf. Kompilieren mit `xelatex` (nicht pdflatex): nur so sind Umlaute, ß, € und die Textextraktion sauber, weil im Sandbox keine Type-1-T1-Schriften liegen. Das Modell schreibt nur Inhalt; Ränder, Karogrößen, Fluchten und Fußzeile sind fest.
  
@@ -139,7 +139,34 @@ Stochastik
 \saeulen{Mo/,Di/,Mi/}{16}{4}{Anzahl}                nur Achsen (Schüler zeichnet)
 ```
  
-`\baumzwei` trägt genau zwei Äste je Stufe; ein dritter Eintrag in der ersten Stufe wird ohne Folgestufe gezeichnet.
+`\baumzwei` trägt genau zwei Äste je Stufe; ein dritter Eintrag in der ersten Stufe wird ohne Folgestufe gezeichnet. Wahrscheinlichkeiten stehen im Mathemodus, Dezimalkomma also als `0{,}4`, Brüche als `\frac{2}{5}`.
+
+```
+\baumdreigleich{R/0{,}4,B/0{,}6}                                   dreistufig, alle Stufen gleich (mit Zurücklegen)
+\baumdrei{S1}{S2 nach 1. Ast}{S2 nach 2. Ast}{S3 nach 1-1}{S3 nach 1-2}{S3 nach 2-1}{S3 nach 2-2}
+\baumdrei{R/\frac{2}{5},B/\frac{3}{5}}{R/\frac{1}{4},B/\frac{3}{4}}{R/,B/}{R/,B/}{R/,B/}{R/,B/}{R/,B/}
+\kreisdiagramm{Bus 40 \%/40, Rad 25 \%/25, Auto 20 \%/20, zu Fuß 15 \%/15}
+\kreisdiagramm[1.2]{A/3, B/5, /2}       Radius in cm (Voreinstellung 1,8); leeres Label = Sektor ohne Text
+\kreisdiagramm{}                         leerer Kreis mit Mittelpunkt (Schüler zeichnet)
+\vierfeldertafel{A}{B}{20,30,50,10,40,50,30,70,100}   zeilenweise B, nicht B, Summe; leere Einträge frei
+\vierfeldertafel{A}{B}{}                 alle Felder leer
+\binomialverteilung{10}{0.3}                                  Stabdiagramm P(X=k), k = 0..n
+\binomialverteilung[von=15,bis=35,markiere=15:22]{50}{0.5}    Ausschnitt, Stäbe 15..22 dunkel
+\binomialverteilung[ymax=0.4,ystep=0.1]{5}{0.7}               y-Achse selbst gesetzt
+\normalverteilung{0}{1}                                       Dichtekurve, x-Achse in Schritten von sigma
+\normalverteilung[von=90,bis=110]{100}{10}                    Fläche grau; nur von oder nur bis = einseitig
+\normalverteilung[xstep=10,karo=0.5]{50}{15}
+```
+
+`\baumdrei` hat sieben Listen: erste Stufe, zweite Stufe nach dem ersten und zweiten Ast, dritte Stufe nach den vier Pfaden in der Reihenfolge 1-1, 1-2, 2-1, 2-2. Bei gleichen Wahrscheinlichkeiten auf allen Stufen genügt `\baumdreigleich` mit einer Liste. Zwei Äste je Stufe; der Baum ist rund 8 cm breit und 5,5 cm hoch, zwei nebeneinander passen.
+
+Beim `\kreisdiagramm` bestimmen die Werte nur die Winkel; ob du Prozent oder absolute Zahlen gibst, ist gleich. Was am Sektor stehen soll, schreibst du selbst ins Label, im Textmodus (`Bus 40 \%`). Die Sektoren beginnen oben und laufen im Uhrzeigersinn, in vier wechselnden Grautönen. Die Labels stehen außen; bei vielen kleinen Sektoren nebeneinander überlappen sie, dann `{}` und eine Legende im Text.
+
+Die `\vierfeldertafel` nimmt die Merkmale A (Spalten) und B (Zeilen); die Gegenereignisse setzt sie selbst mit Überstrich. Die neun Werte stehen zeilenweise: erst die Zeile B (A, nicht A, Summe), dann nicht B, dann die Summenzeile. Alle neun Kommas müssen stehen, auch wenn Einträge leer bleiben. Werte im Mathemodus, Dezimalkomma als `0{,}2`.
+
+`\binomialverteilung` rechnet P(X=k) selbst. Ohne Schlüssel läuft k von 0 bis n und die y-Achse passt sich dem größten Wert an. Ab n > 25 zeigt die Vorlage nur die k mit P(X=k) ≥ 0,0005 und meldet den Bereich im Log; mit `von`/`bis` legst du ihn selbst fest. Ein Stab ist ein Karo breit (0,5 cm), mehr als 30 Stäbe passen nicht in die Zeile. `markiere=a:b` färbt die Stäbe a bis b dunkel, etwa für P(X ≤ 3) oder P(15 ≤ X ≤ 22). Die Werte stehen nicht an den Stäben; wer sie braucht, setzt eine Tabelle daneben.
+
+`\normalverteilung` zeichnet die Dichtekurve über μ ± 3,5σ, die x-Achse in Schritten von σ ab dem ersten Vielfachen von `xstep` im Bereich, das Maximum ist vier Karos hoch, eine y-Achse mit Zahlen gibt es nicht. Bei krummen σ (6,5) werden die Achsenzahlen krumm (149,5; 156; …), dann `xstep` auf einen runden Wert setzen. Mit `von`/`bis` färbst du eine Fläche; fehlt eine Grenze, geht die Fläche bis zum Rand. Für z-Werte `\normalverteilung{0}{1}`.
 
 Boxplot und Histogramm
 
@@ -151,6 +178,7 @@ Boxplot und Histogramm
 \histogramm[ymax=10,ystep=2,xstep=10,ylabel=$h$]{0:10/4, 10:20/9, 20:30/6}
 \histogramm[dichte,ymax=1,ystep=0.2,xstep=10,ylabel=Dichte]{0:10/4, 10:20/9, 20:40/6}
 \histogramm[ymax=8,ystep=2,xstep=5]{0:5/, 5:10/, 10:15/}     ohne Werte: Achsen und Klassengrenzen
+\histogramm[titel=Histogramm I,ymax=10,ystep=2,xstep=10]{...}   Titel im Textmodus über dem Diagramm
 ```
 
 Die Boxplots einer Umgebung teilen sich eine Achse und stehen in der Reihenfolge der `\bp`-Zeilen von unten nach oben; das Label steht links außerhalb und im Textmodus, `\bp{...}{Klasse 8a}` also ohne Dollarzeichen. Liegt ein Wert außerhalb von `xmin`..`xmax`, zeichnet die Vorlage ihn trotzdem und meldet es als `Package mathblatt Warning`.
@@ -185,4 +213,4 @@ Analysis (im ksys, `\ableitungspaar` freistehend)
 
 Noch nicht in Stufe 3
  
-Netze, Zweitafelprojektion, dreistufiger Baum, Kreisdiagramm, Vierfeldertafel, Binomial- und Normalverteilung, Kreis mit Umfangs- und Mittelpunktswinkel, Einheitskreis, Zahlenstrahl; im 3D-System Spurgeraden, Ebenen ohne Achsenabschnitte, Kegel/Kugel/Zylinder – Bausteinliste Stufe 3.
+Netze, Zweitafelprojektion, Kreis mit Umfangs- und Mittelpunktswinkel, Strahlensatzfigur, Einheitskreis, Sinuskurve, Zahlenstrahl, Bruchteile, Termbaum; im 3D-System Spurgeraden, Ebenen ohne Achsenabschnitte, Kegel/Kugel/Zylinder – Bausteinliste Stufe 3.
