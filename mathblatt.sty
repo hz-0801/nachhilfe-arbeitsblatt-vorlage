@@ -1,5 +1,5 @@
 % mathblatt.sty – Vorlage für Nachhilfe-Arbeitsblätter, Stufe 3 (Sek I und Oberstufe)
-% Version 2026-09-05h (Stufe 2: ksys-leit, Achsenzahlen, teil-Zaehler, Koerper, rquader/rpyramide,
+% Version 2026-09-05i (Stufe 2: ksys-leit, Achsenzahlen, teil-Zaehler, Koerper, rquader/rpyramide,
 %                      boxplots, histogramm, kreis, Winkelfiguren, Dezimalkomma;
 %                      Block 5 Analysis: ableitungspaar, flaeche, flaechezwischen, tangentean,
 %                      hochpunkt/tiefpunkt/wendepunkt, asymptote; Kurvenlabel neu positioniert;
@@ -10,7 +10,8 @@
 %                      Block 8 Zahlen/Trigo: zahlenstrahl, zahlengerade+intervall, bruchkreis,
 %                      bruchrechteck, termbaum, einheitskreis, ksys[trigo], sinus, kosinus;
 %                      05h: \x in Nutzertermen geklammert (\x^2 bei x<0), Baumlabels frei,
-%                      Radius-/Durchmesser-/Sehnenlabel neben der Linie)
+%                      Radius-/Durchmesser-/Sehnenlabel neben der Linie;
+%                      05i: \funktion[x]/\funktionab[x] mit Labelstelle)
 %
 % Verwendung:  \usepackage{mathblatt}   (Datei neben der .tex-Datei)
 % Kompilieren mit  xelatex  (saubere Schrift, Umlaute, €, Textextraktion);
@@ -19,7 +20,7 @@
 % Inhalt; Layout, Grafikgrößen und Ausrichtung sind hier festgelegt.
 %
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{mathblatt}[2026/09/05 Nachhilfe-Arbeitsblatt 2026-09-05h]
+\ProvidesPackage{mathblatt}[2026/09/05 Nachhilfe-Arbeitsblatt 2026-09-05i]
 
 \RequirePackage[a4paper,margin=18mm,top=16mm,bottom=18mm]{geometry}
 \RequirePackage{iftex}
@@ -227,6 +228,7 @@
 %   \steigungsdreieck{0}{-1}{2}   ab Punkt (0|-1), 1 nach rechts, m=2 nach oben
 %   \parabel{1}{-1}{-2}{p}     y = a(x-d)^2+e mit Scheitel markiert
 %   \funktion{0.5*\x^2-2}{f}   beliebiger Term in pgf-Syntax; die Variable heisst \x
+%   \funktion[2.5]{...}{f}     Label an der Stelle x=2.5 (mehrere Graphen: Labels auseinanderziehen)
 % \end{ksys}
 % karo = Kantenlänge einer Gitterzelle in cm (nicht cm je Achseneinheit).
 % Der Maßstab je Achse ergibt sich aus karo und xstep/ystep, deshalb sind
@@ -338,14 +340,14 @@
     \ifnum\mbfok=1
       \node[fill=white,inner sep=1pt,font=\small] at (\mbfx,\mbfy) {$#2$};
     \else\PackageWarning{mathblatt}{Label #2: Graph liegt im Bereich nicht in der Zeichenflaeche}\fi}}
-\newcommand{\funktion}[2]{%
+\NewDocumentCommand{\funktion}{o m m}{%
   \begingroup\mbxsicher
-  \draw[mbterm,line width=0.8pt,domain=\ksxmin:\ksxmax,samples=120,smooth] plot (\mbt,{#1});\endgroup
-  \mbfunklabel{#1}{#2}{\ksxmin}{\ksxmax}}
-\newcommand{\funktionab}[4]{% Term, Label, von, bis  (bei Definitionslücken)
+  \draw[mbterm,line width=0.8pt,domain=\ksxmin:\ksxmax,samples=120,smooth] plot (\mbt,{#2});\endgroup
+  \IfNoValueTF{#1}{\mbfunklabel{#2}{#3}{\ksxmin}{\ksxmax}}{\mbfunklabel{#2}{#3}{\ksxmin}{#1}}}
+\NewDocumentCommand{\funktionab}{o m m m m}{% [Labelstelle] Term, Label, von, bis  (bei Definitionslücken)
   \begingroup\mbxsicher
-  \draw[mbterm,line width=0.8pt,domain=#3:#4,samples=120,smooth] plot (\mbt,{#1});\endgroup
-  \mbfunklabel{#1}{#2}{#3}{#4}}
+  \draw[mbterm,line width=0.8pt,domain=#4:#5,samples=120,smooth] plot (\mbt,{#2});\endgroup
+  \IfNoValueTF{#1}{\mbfunklabel{#2}{#3}{#4}{#5}}{\mbfunklabel{#2}{#3}{#4}{#1}}}
 % Zwei Systeme nebeneinander: \ksysabstand dazwischen
 \newcommand{\ksysabstand}{\hspace{1.0cm}}
 
