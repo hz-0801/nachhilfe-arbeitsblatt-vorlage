@@ -1,11 +1,11 @@
-mathblatt.sty – Anleitung (Stufe 1)
-Gehört zu Vorlagenversion 2026-09-05a. Die Version steht in Zeile 2 der `mathblatt.sty`. Weichen beide ab, gilt die Vorlage: Makros, die sie nicht kennt, benutzt du nicht, und du meldest die Abweichung in einer Zeile im Ausgabeblock.
+mathblatt.sty – Anleitung (Stufe 2)
+Gehört zu Vorlagenversion 2026-09-05c. Die Version steht in Zeile 2 der `mathblatt.sty`. Weichen beide ab, gilt die Vorlage: Makros, die sie nicht kennt, benutzt du nicht, und du meldest die Abweichung in einer Zeile im Ausgabeblock.
  
 Datei `mathblatt.sty` neben die .tex-Datei legen, `\usepackage{mathblatt}` im Kopf. Kompilieren mit `xelatex` (nicht pdflatex): nur so sind Umlaute, ß, € und die Textextraktion sauber, weil im Sandbox keine Type-1-T1-Schriften liegen. Das Modell schreibt nur Inhalt; Ränder, Karogrößen, Fluchten und Fußzeile sind fest.
  
 Schreibweisen: Kompiliert wird mit xelatex, deshalb schreibst du Umlaute, ß, € und deutsche
 Anführungszeichen direkt in den Quelltext. `\ss`, `\euro`, `\"a` und `\glqq` sind weder nötig noch
-zuverlässig. Bei Zahlen mit Dezimalkomma in Mathematik `$0{,}5$` schreiben, damit der Abstand stimmt.
+zuverlässig. Bei Zahlen mit Dezimalkomma in Mathematik `$0{,}5$` schreiben, damit der Abstand stimmt. In den Grafikmakros gibst du Koordinaten und Werte dagegen mit Dezimalpunkt an (`2.5`); die Achsenbezifferung setzt die Vorlage selbst mit Komma.
  
 Beschriftungen: Alle Label-Argumente der Grafikmakros – `\gerade`, `\parabel`, `\funktion`, `\punkt`,
 `\steigungsdreieck`, `\dreieck`, `\rpunkt`, `\rvektor`, `\rgerade`, `\rebene`, die Körper – werden vom Makro selbst in Mathematik gesetzt. Du
@@ -30,7 +30,7 @@ Grundgerüst
  
 Die drei Listenmakros ersetzen den `geruest`-Block bei den häufigsten Aufgabentypen und sparen etwa drei Viertel des Quelltextes. Einträge werden mit Komma getrennt, das Dezimalkomma als `0{,}5` geschrieben, damit es nicht als Trenner gilt. Das optionale Argument ist die Nummer der ersten Sternaufgabe; ohne Angabe gibt es keine Sterne. Der Term steht ohne `y =`, das setzt das Makro. Bei `\punktprobenliste` trennt ein Schrägstrich Term und Punkt. Für Typen ohne passendes Listenmakro bleibt `geruest`.
  
-Eine Hauptnummer bekommt genau eine `teile`-Umgebung: Jede neue Umgebung setzt die Buchstabenzählung auf a) zurück. Tabellen und Grafiken stehen innerhalb der Teilaufgabe, zu der sie gehören.
+Innerhalb einer Hauptnummer läuft die Buchstabenzählung über alle `teile`-, `teilezwei`-, `geruest`-Blöcke und Listenmakros weiter: Du kannst einen `teile`-Block beenden, Text oder eine Grafik setzen und mit einem neuen `teile`-Block bei d) fortfahren. Erst die nächste `\begin{aufgabe}` beginnt wieder bei a). Das optionale Argument der Listenmakros zählt in dieser Reihenfolge: `[7]` setzt ab dem siebten Buchstaben (g) den Stern, auch wenn die Liste erst bei d) beginnt.
  
 Alles, was zur Hauptnummer gehört – Teilaufgaben, Wertetabelle, Koordinatensystem –, steht zwischen `\begin{aufgabe}` und `\end{aufgabe}`; nur dann hält der Umbruch die Nummer zusammen. Passt sie nicht mehr auf die Seite, rückt sie als Ganzes weiter. Ist eine einzelne Nummer höher als eine Seite, bricht sie doch und meldet das als `Package mathblatt Warning` im Log.
  
@@ -48,15 +48,18 @@ Koordinatensystem 2D
 \begin{ksys}[xmin=-4,xmax=4,ymin=-5,ymax=5]            Zeichenfläche (Karo 8 mm)
 \begin{ksys}[xmin=-5,xmax=5,ymin=-5,ymax=5,ablesen]    Ablesegrafik (Karo 6 mm)
 \begin{ksys}[...,klein]                                Lösungsgrafik (Karo 3,5 mm)
+\begin{ksys}[leit]                                     Leitgrafik im Übersichtskasten (Karo 6 mm, −3..3, etwa 4 cm)
 \begin{ksys}[xmin=0,xmax=30,ymin=0,ymax=240,xstep=5,ystep=40,xlabel=t in min,ylabel=W in l]
   \gerade{2}{-1}{g}   \gerade[1.5]{2}{-1}{g}   \punkt{2}{3}{A}   \steigungsdreieck{0}{-1}{2}
   \parabel{1}{-1}{-2}{p}      y = a(x-d)^2+e
-  \funktion{0.5*x^2-2}{f}     \funktionab{1/x}{f}{0.2}{4}
+  \funktion{0.5*\x^2-2}{f}    \funktionab{1/\x}{f}{0.2}{4}
 \end{ksys}
 ```
  
-`karo` ist die Kantenlänge einer Gitterzelle in cm, nicht der Maßstab. Den Maßstab je Achse rechnet die Vorlage aus `karo` und `xstep`/`ystep` selbst aus. Für ungleiche Achsen genügen deshalb `xstep` und `ystep`; `karo` bleibt weg und die Zellen bleiben 8 mm. `xstep`/`ystep` steuern Gitter, Bezifferung und Maßstab gemeinsam – ein eigener Feinschritt fürs Gitter ist nicht vorgesehen. Achsenbeschriftungen stehen im Textmodus: `xlabel=t in min` schreibt sich direkt, für Mathematik `xlabel=$x$` (so auch die Voreinstellung).
+`karo` ist die Kantenlänge einer Gitterzelle in cm, nicht der Maßstab. Den Maßstab je Achse rechnet die Vorlage aus `karo` und `xstep`/`ystep` selbst aus. Für ungleiche Achsen genügen deshalb `xstep` und `ystep`; `karo` bleibt weg und die Zellen bleiben 8 mm. `xstep`/`ystep` steuern Gitter, Bezifferung und Maßstab gemeinsam – ein eigener Feinschritt fürs Gitter ist nicht vorgesehen. Die Achsenzahlen passt die Vorlage selbst an: unter Karo 6 mm werden sie kleiner gesetzt, und wenn die breiteste Zahl nicht in ein Karo passt, steht nur jede zweite (bei Bedarf dritte) Zahl, immer von 0 aus gezählt – bei `xstep=0.5` also die ganzen Zahlen. Das Gitter bleibt dabei vollständig. `[leit]` ergibt ein etwa 4 cm großes System für den Übersichtskasten; weitere Schlüssel dahinter überschreiben es (`[leit,ymax=5]`). Achsenbeschriftungen stehen im Textmodus: `xlabel=t in min` schreibt sich direkt, für Mathematik `xlabel=$x$` (so auch die Voreinstellung).
  
+In `\funktion` und `\funktionab` heißt die Variable `\x` mit Backslash: `\funktion{0.5*\x^2-2}{f}`. Ein `x` ohne Backslash bricht die Kompilierung ab (`Unknown function 'x'`).
+
 Bei `\gerade` lässt sich die Stelle des Labels als optionales Argument setzen: `\gerade[1.5]{2}{-1}{g}` beschriftet die Gerade bei $x=1{,}5$. Liegen mehrere Geraden in einem System, ziehst du die Labels damit auseinander, statt die Aufgabenwerte zu ändern. Fällt die gewählte Stelle aus der Zeichenfläche, rückt das Label automatisch an den Rand.
  
 Zwei Systeme nebeneinander: `\end{ksys}\ksysabstand\begin{ksys}...`.
@@ -78,6 +81,9 @@ Koordinatensystem 3D (Kavalierprojektion)
   \rgerade[-1:1.5]{3,1,-1}{0,1,2}{h}     Parameterbereich t = −1 … 1,5 statt Rand; Label am Ende bei t max
   \rebene{4}{6}{3}{E}                    Spurdreieck aus den Achsenabschnitten x1 = 4, x2 = 6, x3 = 3
   \rebenepar{1,1,1}{2,1,0}{0,2,2}{F}     Parallelogramm: Stützpunkt, zwei Spannvektoren (werden als Pfeile gezeichnet)
+  \rebenepar*{0,0,3}{4,0,1}{0,5,0}{D}    Sternform: Fläche ohne Spannvektorpfeile (Dach, Wand, Glasscheibe)
+  \rquader{1,1,0}{3}{4}{2}               Quader: Ecke mit den kleinsten Koordinaten, Kanten a (x1), b (x2), c (x3)
+  \rpyramide{1,3,0}{2}{3}{2,4.5,4}       Rechteckpyramide: Ecke, Grundkanten a (x1), b (x2), Spitze als Tripel
 \end{ksys3}
 ```
  
@@ -85,9 +91,11 @@ x₂ waagerecht, x₃ senkrecht, x₁ unter 45° nach links unten mit halber Lä
  
 `\rpunkt` zeichnet erst das Lot, dann den Punkt; das Label steht im Mathemodus. Koordinaten mit Dezimalpunkt (`2.5`). Negative Koordinaten in Labels und Aufgabentexten als `C(6|{-2}|{-1})` schreiben, sonst setzt LaTeX Binärabstände um das Minus. Um den Ursprung liegen die Zahlen dreier Achsen dicht beieinander; bei Karo 5 mm und x₁ bis 6 ist das lesbar, bei längerem x₁-Bereich `x1schritt=2` setzen.
  
-Punkte und Vektoren der Vektor-, Geraden- und Ebenenmakros stehen als Tripel `{x1,x2,x3}` in einem Argument; nur `\rpunkt` und `\rebene` haben getrennte Argumente. Der Stützvektor einer Geraden oder Ebene ist nicht Teil des Makros – bei Bedarf `\rvektor{1,1,1}{\vec p}` davorsetzen. Vektorlabels sitzen in der Pfeilmitte; liegt die Mitte nahe einer Achse, kollidiert das Label mit der Bezifferung – dann die Position im optionalen Argument ändern (`[below right]`, `[above left]`). Ebenenlabels sitzen in der Flächenmitte; das optionale Argument nimmt Knotenoptionen wie `[above right]`.
+Punkte und Vektoren der Vektor-, Geraden- und Ebenenmakros stehen als Tripel `{x1,x2,x3}` in einem Argument; nur `\rpunkt` und `\rebene` haben getrennte Argumente. Der Stützvektor einer Geraden oder Ebene ist nicht Teil des Makros – bei Bedarf `\rvektor{1,1,1}{\vec p}` davorsetzen. Vektorlabels sitzen in der Pfeilmitte; liegt die Mitte nahe einer Achse, kollidiert das Label mit der Bezifferung – dann die Position im optionalen Argument ändern (`[below right]`, `[above left]`). Ebenenlabels sitzen in der Flächenmitte; das optionale Argument nimmt Knotenoptionen wie `[above right]`. `\rebenepar` zeigt die Spannvektoren als Pfeile (Parameterform erklären), `\rebenepar*` nur die Fläche (ein Objekt im Raum: Dach, Wand). Eckpunkte setzt du mit `\rpunkt*` dazu.
 
 `\rgerade` ohne Parameterbereich endet genau dort, wo die Gerade den Bereich x1min..x1max, x2min..x2max, x3min..x3max verlässt. Verlässt sie ihn über die x₁-Grenze, endet sie mitten im Bild – dann `x1max` vergrößern oder den Bereich als `[tmin:tmax]` vorgeben. Liegt die Gerade ganz außerhalb, warnt das Log (`Package mathblatt Warning`) und zeichnet t = −1 … 3. Richtungsvektoren, die ein Vielfaches von (2|1|1) sind, haben in dieser Projektion kein Bild (Gerade erscheint als Punkt) – solche Aufgabenwerte vermeiden. Das Spurdreieck braucht drei Achsenabschnitte; Ebenen parallel zu einer Achse zeichnest du als `\rebenepar` oder mit freiem TikZ.
+
+`\rquader` und `\rpyramide` zeichnen nur die Kanten, verdeckte gestrichelt; der Betrachter steht in Richtung (2|1|1), sichtbar sind also die Flächen mit den größten Koordinaten, beim Quader sind die drei Kanten an der angegebenen Ecke verdeckt. Labels und Eckpunkte setzt du mit `\rpunkt*` (z. B. `\rpunkt*[below left]{4}{1}{0}{A}`), Höhen oder Diagonalen mit freiem TikZ (`\draw[dashed] (2.5,3,0) -- (2.5,3,4);`). Bei der Pyramide gilt: Grundfläche liegt in der Ebene x3 = Eckpunkt-x3, die Spitze darf beliebig liegen, auch schräg; negative Kantenlängen sind erlaubt und drehen die Richtung um. Ein Standardsystem fasst einen Quader mit Kanten bis etwa 4 und eine kleine Pyramide daneben, mehr nicht.
 
 Innerhalb von `ksys3` gelten Raumkoordinaten. Was die Vorlage nicht als Makro hat, zeichnest du mit gewöhnlichem TikZ, z. B. `\draw[dashed] (1,2,0) -- (3,4,2);`; die Projektion übernimmt die Umgebung. Ein Standardsystem ist rund 13 cm breit, zwei nebeneinander passen nicht. `[leit]` ergibt ein etwa 4 cm großes System für den Übersichtskasten; weitere Schlüssel dahinter überschreiben es (`[leit,x2max=3]`). Nicht mit den Körpern auf ein Blatt (andere Blickrichtung, siehe unten).
  
@@ -97,9 +105,30 @@ Geometrie und Körper (Maße in cm)
 \dreieckrw{4}{3}{a}{b}{c}                          rechtwinklig bei C
 \dreieck{(0,0)}{(5,0)}{(1.5,3)}{a}{b}{c}{\alpha}{\beta}{\gamma}
 \quader{4}{2}{3}{a}{b}{c}   \zylinder{1.2}{3}{r}{h}   \prismadreieck{4}{2.5}{2}{g}{h}{l}
+\pyramide{4}{3}{3.5}{a}{b}{h}      Rechteckpyramide: Grundkanten a (vorn), b (Tiefe), Höhe h; quadratisch mit a = b
+\kegel{1.5}{3}{r}{h}{s}            Radius, Höhe; Labels r, h, s (Mantellinie)
+\kugel{1.5}{r}                     Radius
 ```
  
-Leere Beschriftung `{}` lässt das Label weg. Die Körper sind in Kavalierprojektion mit der Tiefe nach rechts oben gezeichnet – das ist eine andere Blickrichtung als beim räumlichen Koordinatensystem, deshalb gehören Körper und 3D-System nicht nebeneinander auf ein Blatt.
+Kreis und Winkelfiguren
+
+```
+\begin{kreis}[2]                     Radius in cm (Voreinstellung 2)
+  \mittelpunkt{M}                    \kreispunkt{110}{B}   \kreispunkt[above right]{110}{B}
+  \radius{40}{r}                     \durchmesser{0}{d}    \sehne{200}{340}{s}
+  \tangente{300}{t}                  Tangente im Randpunkt, rechter Winkel markiert
+  \sektor{30}{110}{\alpha}           \bogen{30}{110}{b}
+\end{kreis}
+\geradenkreuzung{35}{\alpha}{\beta}{\gamma}{\delta}    zwei Geraden durch einen Punkt
+\parallelenpaar{60}{\alpha}{\beta}{\gamma}{\delta}     zwei Parallelen mit Schnittgerade
+\winkel{40}{\alpha}   \winkel[4]{40}{\alpha}           einzelner Winkel, Schenkellänge in cm
+```
+
+Alle Winkel stehen in Grad und werden gegen den Uhrzeigersinn ab der Waagerechten gezählt: `\radius{40}{r}` zeigt nach rechts oben, `\radius{270}{r}` nach unten. Ein Sektor läuft vom ersten zum zweiten Winkel, ebenfalls gegen den Uhrzeigersinn. Der Kreis selbst hat kein Gitter; die Umgebung nimmt genau einen Kreis auf, mehrere Kreise setzt du nebeneinander mit `\hspace`.
+
+Bei `\geradenkreuzung` liegt $\alpha$ rechts oben, $\beta$ links oben, $\gamma$ links unten (Scheitelwinkel zu $\alpha$), $\delta$ rechts unten. Bei `\parallelenpaar` gehören $\alpha$ und $\beta$ zur oberen Kreuzung, $\gamma$ und $\delta$ zur unteren, jeweils rechts oben und links oben; $\alpha$ und $\gamma$ sind damit Stufenwinkel, $\beta$ und $\delta$ ebenso. Die Parallelen werden so lang gezeichnet, dass beide Schnittpunkte darauf liegen, auch bei flachen Winkeln.
+
+Leere Beschriftung `{}` lässt das Label weg – in allen Makros dieses Abschnitts und bei den Körpern. Beim Prisma ist `h` die Höhe des Grunddreiecks; sie wird als gestrichelte Linie mit Rechtwinkelmarke in der Vorderfläche gezeichnet, das Label steht rechts daneben. Beim Zylinder liegt `r` auf der gestrichelten Radiuslinie in der Deckfläche. Pyramide und Kegel zeigen die Höhe gestrichelt mit Fußpunkt und Rechtwinkelmarke, das Label `h` steht links davon; beim Kegel liegt `r` auf der Radiuslinie der Grundfläche, `s` an der rechten Mantellinie. Bei der Pyramide werden verdeckte Kanten aus den Maßen bestimmt – bei flachen Pyramiden ist die linke Seitenfläche sichtbar, dann ist die hintere linke Kante durchgezogen; das ist richtig. Die Körper sind in Kavalierprojektion mit der Tiefe nach rechts oben gezeichnet – das ist eine andere Blickrichtung als beim räumlichen Koordinatensystem, deshalb gehören Körper und 3D-System nicht nebeneinander auf ein Blatt.
  
 Stochastik
  
@@ -111,7 +140,25 @@ Stochastik
 ```
  
 `\baumzwei` trägt genau zwei Äste je Stufe; ein dritter Eintrag in der ersten Stufe wird ohne Folgestufe gezeichnet.
+
+Boxplot und Histogramm
+
+```
+\begin{boxplots}[xmin=0,xmax=20,xstep=2,xlabel=Punkte]
+  \bp{4,7,9,13,18}{Klasse 8a}    Minimum, unteres Quartil, Median, oberes Quartil, Maximum
+  \bp{}{Klasse 8b}               leere Werte: nur Zeile und Label, Schüler zeichnet selbst
+\end{boxplots}
+\histogramm[ymax=10,ystep=2,xstep=10,ylabel=$h$]{0:10/4, 10:20/9, 20:30/6}
+\histogramm[dichte,ymax=1,ystep=0.2,xstep=10,ylabel=Dichte]{0:10/4, 10:20/9, 20:40/6}
+\histogramm[ymax=8,ystep=2,xstep=5]{0:5/, 5:10/, 10:15/}     ohne Werte: Achsen und Klassengrenzen
+```
+
+Die Boxplots einer Umgebung teilen sich eine Achse und stehen in der Reihenfolge der `\bp`-Zeilen von unten nach oben; das Label steht links außerhalb und im Textmodus, `\bp{...}{Klasse 8a}` also ohne Dollarzeichen. Liegt ein Wert außerhalb von `xmin`..`xmax`, zeichnet die Vorlage ihn trotzdem und meldet es als `Package mathblatt Warning`.
+
+Beim `\histogramm` schreibst du jede Klasse als `von:bis/Höhe`, durch Komma getrennt; die Klassen müssen aneinandergrenzen und aufsteigend stehen. Ohne `dichte` ist die Höhe die Häufigkeit – das passt nur bei gleich breiten Klassen. Bei ungleichen Breiten setzt du `dichte`: dann teilt die Vorlage die angegebene Häufigkeit durch die Klassenbreite, und die Fläche entspricht der Häufigkeit. Lässt du die Höhe weg (`0:10/`), entstehen nur Achsen, Gitter und Klassengrenzen.
+
+`karo`, `xstep` und `ystep` wirken bei beiden wie beim `ksys`: `karo` ist die Kantenlänge einer Gitterzelle (0,5 cm), `xstep`/`ystep` der Wert je Zelle. `xlabel` und `ylabel` stehen im Textmodus. Die Achsenzahlen werden wie beim `ksys` automatisch verkleinert und ausgedünnt.
  
 Noch nicht in Stufe 1
  
-Kreis, Winkelfiguren, Pyramide/Kegel/Kugel, Netze, dreistufiger Baum, Kreisdiagramm, Histogramm, Analysis-Darstellungen; im 3D-System Körper, Spurgeraden und Ebenen ohne Achsenabschnitte – Bausteinliste Stufe 2/3.
+Netze, Zweitafelprojektion, dreistufiger Baum, Kreisdiagramm, Analysis-Darstellungen (Ableitung, Integralfläche), Kreis mit Umfangs- und Mittelpunktswinkel; im 3D-System Spurgeraden, Ebenen ohne Achsenabschnitte, Kegel/Kugel/Zylinder – Bausteinliste Stufe 3.

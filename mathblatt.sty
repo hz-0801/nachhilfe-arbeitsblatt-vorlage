@@ -1,5 +1,7 @@
-% mathblatt.sty – Vorlage für Nachhilfe-Arbeitsblätter, Stufe 1 (Kern Sek I)
-% Version 2026-09-05a (ksys3: rvektor, rgerade, rebene, rpunkt*, Stil leit)
+% mathblatt.sty – Vorlage für Nachhilfe-Arbeitsblätter, Stufe 2 (Sek I und Oberstufe)
+% Version 2026-09-05c (Block 1: ksys-leit, Achsenzahlen ausgeduennt, teil-Zaehler je Hauptnummer,
+%                      Prisma-h, Zylinder-r, rebenepar*; Block 2: pyramide, kegel, kugel, rquader,
+%                      rpyramide; Block 3: boxplots, histogramm; Block 4: kreis, Winkelfiguren; Dezimalkomma)
 %
 % Verwendung:  \usepackage{mathblatt}   (Datei neben der .tex-Datei)
 % Kompilieren mit  xelatex  (saubere Schrift, Umlaute, €, Textextraktion);
@@ -8,7 +10,7 @@
 % Inhalt; Layout, Grafikgrößen und Ausrichtung sind hier festgelegt.
 %
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{mathblatt}[2026/09/05 Nachhilfe-Arbeitsblatt v2]
+\ProvidesPackage{mathblatt}[2026/09/05 Nachhilfe-Arbeitsblatt 2026-09-05c]
 
 \RequirePackage[a4paper,margin=18mm,top=16mm,bottom=18mm]{geometry}
 \RequirePackage{iftex}
@@ -38,6 +40,9 @@
 \RequirePackage{needspace}
 \IfFileExists{parskip.sty}{\RequirePackage{parskip}}{\setlength{\parindent}{0pt}\setlength{\parskip}{4pt}}
 \IfFileExists{ngerman.ldf}{\RequirePackage[ngerman]{babel}}{}
+
+% Alle Achsenzahlen mit Dezimalkomma und ohne Tausendertrennung
+\pgfkeys{/pgf/number format/.cd,use comma,1000 sep={},precision=3,fixed,fixed zerofill=false}
 
 \definecolor{mbgrau}{gray}{0.55}
 \definecolor{mbgitter}{gray}{0.82}
@@ -78,8 +83,9 @@
 \newcounter{aufgabe}
 \newsavebox{\mbaufgabebox}
 \newlength{\mbaufgabehoehe}
+\newif\ifmbinaufgabe
 \newenvironment{aufgabe}[1]{%
-  \stepcounter{aufgabe}%
+  \stepcounter{aufgabe}\setcounter{teil}{0}\mbinaufgabetrue
   \begin{lrbox}{\mbaufgabebox}%
   \begin{minipage}[t]{\linewidth}%
   \noindent\textbf{\theaufgabe.}\ #1\par}%
@@ -95,15 +101,18 @@
   \noindent\usebox{\mbaufgabebox}\par\addvspace{5pt}}
 
 % Teilaufgaben: Umgebung teile; \teil{...} und \steil{...} (mit Stern)
+% Der Buchstabenzaehler laeuft innerhalb einer aufgabe ueber alle teile-, teilezwei-,
+% geruest-Bloecke und Listenmakros weiter; ausserhalb einer aufgabe beginnt jeder Block bei a).
 \newcounter{teil}
-\newenvironment{teile}{\setcounter{teil}{0}\par\nopagebreak
+\newcommand{\mbteilstart}{\ifmbinaufgabe\else\setcounter{teil}{0}\fi}
+\newenvironment{teile}{\mbteilstart\par\nopagebreak
   \begin{list}{}{\setlength{\leftmargin}{1.6em}\setlength{\labelwidth}{1.4em}
    \setlength{\labelsep}{0.2em}\setlength{\itemsep}{0pt}\setlength{\parsep}{0pt}
    \setlength{\topsep}{1pt}}}{\end{list}}
 \newcommand{\teil}{\stepcounter{teil}\item[\alph{teil})]}
 \newcommand{\steil}{\stepcounter{teil}\item[$\star$\,\alph{teil})]}
 % Zweispaltig: Umgebung teilezwei (kurze Teilaufgaben nebeneinander)
-\newenvironment{teilezwei}{\setcounter{teil}{0}\par\nopagebreak
+\newenvironment{teilezwei}{\mbteilstart\par\nopagebreak
   \begin{tabular}{@{}p{0.48\linewidth}@{}p{0.48\linewidth}@{}}}{\end{tabular}\par}
 \newcommand{\tz}{\stepcounter{teil}\alph{teil})\ }
 \newcommand{\stz}{\stepcounter{teil}$\star$\,\alph{teil})\ }
@@ -118,7 +127,7 @@
 %   \gz{a}{$y = 3x + 2$}{\feld{m}\feld{n}}
 %   \gz{b}{$y = -x + 5$}{\feld{m}\feld{n}}
 %   \end{geruest}
-\newenvironment{geruest}{\setcounter{teil}{0}\par\nopagebreak
+\newenvironment{geruest}{\mbteilstart\par\nopagebreak
   \begin{tabular}{@{\hspace{0.4em}}l@{\hspace{0.4em}}l@{\hspace{1.2em}}l@{}}}{\end{tabular}\par}
 \newcommand{\gz}[3]{\stepcounter{teil}#1) & #2 & #3 \\}
 \newcommand{\gzs}[3]{\stepcounter{teil}$\star$\,#1) & #2 & #3 \\}
@@ -128,27 +137,26 @@
 %   \mnliste[7]{2x+3; 5x-1; ...}          a) y = 2x+3    m = __  n = __
 %   \nullstellenliste[7]{x-4; 2x-6; ...}  a) y = x-4     x_0 = __
 %   \punktprobenliste[7]{2x-1/A(3|5); ...} a) y = 2x-1, A(3|5)   ja / nein
-\newcounter{mbli}
 \newcommand{\mbtabkopf}{\begin{tabular}{@{\hspace{0.4em}}l@{\hspace{0.4em}}l@{\hspace{1.2em}}l@{}}}
 \NewDocumentCommand{\mnliste}{o m}{%
-  \def\mbrows{}\setcounter{mbli}{0}%
-  \foreach \e in {#2}{\stepcounter{mbli}%
-    \IfNoValueTF{#1}{\def\mbs{}}{\ifnum\value{mbli}<#1 \def\mbs{}\else\def\mbs{$\star$\,}\fi}%
-    \edef\mbz{\mbs\alph{mbli})}%
+  \def\mbrows{}\mbteilstart
+  \foreach \e in {#2}{\stepcounter{teil}%
+    \IfNoValueTF{#1}{\def\mbs{}}{\ifnum\value{teil}<#1 \def\mbs{}\else\def\mbs{$\star$\,}\fi}%
+    \edef\mbz{\mbs\alph{teil})}%
     \xappto\mbrows{\mbz & $y = \e$ & \noexpand\feld{m}\noexpand\feld{n} \noexpand\\}}%
   \par\nopagebreak\mbtabkopf\mbrows\end{tabular}\par\addvspace{3pt}}
 \NewDocumentCommand{\nullstellenliste}{o m}{%
-  \def\mbrows{}\setcounter{mbli}{0}%
-  \foreach \e in {#2}{\stepcounter{mbli}%
-    \IfNoValueTF{#1}{\def\mbs{}}{\ifnum\value{mbli}<#1 \def\mbs{}\else\def\mbs{$\star$\,}\fi}%
-    \edef\mbz{\mbs\alph{mbli})}%
+  \def\mbrows{}\mbteilstart
+  \foreach \e in {#2}{\stepcounter{teil}%
+    \IfNoValueTF{#1}{\def\mbs{}}{\ifnum\value{teil}<#1 \def\mbs{}\else\def\mbs{$\star$\,}\fi}%
+    \edef\mbz{\mbs\alph{teil})}%
     \xappto\mbrows{\mbz & $y = \e$ & \noexpand\feldl{x_0} \noexpand\\}}%
   \par\nopagebreak\mbtabkopf\mbrows\end{tabular}\par\addvspace{3pt}}
 \NewDocumentCommand{\punktprobenliste}{o m}{%
-  \def\mbrows{}\setcounter{mbli}{0}%
-  \foreach \t/\pk in {#2}{\stepcounter{mbli}%
-    \IfNoValueTF{#1}{\def\mbs{}}{\ifnum\value{mbli}<#1 \def\mbs{}\else\def\mbs{$\star$\,}\fi}%
-    \edef\mbz{\mbs\alph{mbli})}%
+  \def\mbrows{}\mbteilstart
+  \foreach \t/\pk in {#2}{\stepcounter{teil}%
+    \IfNoValueTF{#1}{\def\mbs{}}{\ifnum\value{teil}<#1 \def\mbs{}\else\def\mbs{$\star$\,}\fi}%
+    \edef\mbz{\mbs\alph{teil})}%
     \xappto\mbrows{\mbz & $y = \t$, \noexpand\quad $\pk$ & \noexpand\janein \noexpand\\}}%
   \par\nopagebreak\mbtabkopf\mbrows\end{tabular}\par\addvspace{3pt}}
 
@@ -203,16 +211,21 @@
 % \begin{ksys}[xmin=-4,xmax=4,ymin=-5,ymax=5]           Zeichenfläche, Karo 8 mm
 % \begin{ksys}[xmin=-5,xmax=5,ymin=-5,ymax=5,ablesen]   Ablesegrafik, Karo 6 mm
 % \begin{ksys}[...,klein]                               Lösungsgrafik, Karo 3.5 mm
+% \begin{ksys}[leit]                                    Leitgrafik im Übersichtskasten: Karo 6 mm, -3..3
 % \begin{ksys}[...,xlabel=t in min,ylabel=W in l,xstep=5,ystep=40,karo=0.16]
 %   \gerade{2}{-1}{g}          y = 2x - 1, beschriftet g (an rechtem/oberem Rand)
 %   \punkt{2}{3}{A}            Punkt mit Beschriftung
 %   \steigungsdreieck{0}{-1}{2}   ab Punkt (0|-1), 1 nach rechts, m=2 nach oben
 %   \parabel{1}{-1}{-2}{p}     y = a(x-d)^2+e mit Scheitel markiert
-%   \funktion{0.5*x^2-2}{f}    beliebiger Term in pgf-Syntax
+%   \funktion{0.5*\x^2-2}{f}   beliebiger Term in pgf-Syntax; die Variable heisst \x
 % \end{ksys}
 % karo = Kantenlänge einer Gitterzelle in cm (nicht cm je Achseneinheit).
 % Der Maßstab je Achse ergibt sich aus karo und xstep/ystep, deshalb sind
 % ungleiche Achsen ohne Rechnung möglich: xstep=5, ystep=40 → Zelle bleibt 8 mm.
+% Achsenzahlen: unter Karo 6 mm in \tiny statt \scriptsize; passt die breiteste
+% Zahl nicht in ein Karo, wird nur jede zweite (dritte …) Zahl gesetzt, immer
+% ausgehend von 0. Beides automatisch, kein Schlüssel.
+\newsavebox{\mbmessbox}
 \pgfkeys{/ksys/.is family, /ksys,
   xmin/.estore in=\ksxmin, xmax/.estore in=\ksxmax,
   ymin/.estore in=\ksymin, ymax/.estore in=\ksymax,
@@ -220,6 +233,7 @@
   karo/.estore in=\kskaro,
   xlabel/.estore in=\ksxlabel, ylabel/.estore in=\ksylabel,
   ablesen/.style={karo=0.6}, klein/.style={karo=0.35},
+  leit/.style={karo=0.6,xmin=-3,xmax=3,ymin=-3,ymax=3},
   default/.style={xmin=-4,xmax=4,ymin=-4,ymax=4,xstep=1,ystep=1,karo=0.8,xlabel=$x$,ylabel=$y$}}
 \newenvironment{ksys}[1][]{%
   \pgfkeys{/ksys,default,#1}%
@@ -229,16 +243,26 @@
   \pgfmathsetmacro{\ksty}{0.12*\ksystep}%
   \pgfmathsetmacro{\ksxpfeil}{\ksxmax+0.5*\ksxstep}%
   \pgfmathsetmacro{\ksypfeil}{\ksymax+0.5*\ksystep}%
+  \pgfmathsetmacro{\ksxa}{\ksxmin+\ksxstep}\pgfmathsetmacro{\ksya}{\ksymin+\ksystep}%
+  \ifdim\kskaro cm<0.6cm \def\mbtf{\tiny}\else\def\mbtf{\scriptsize}\fi
+  \xdef\mbwmax{0pt}% breiteste x-Zahl bestimmt die Ausduennung
+  \foreach \x in {\ksxmin,\ksxa,...,\ksxmax}{\sbox\mbmessbox{\mbtf$\pgfmathprintnumber{\x}$}%
+    \ifdim\wd\mbmessbox>\mbwmax\xdef\mbwmax{\the\wd\mbmessbox}\fi}%
+  \edef\mbhh{\the\dimexpr\ht\mbmessbox+\dp\mbmessbox\relax}%
+  \pgfmathtruncatemacro{\ksxl}{max(1,ceil((\mbwmax+2pt)/(\kskaro cm)))}%
+  \pgfmathtruncatemacro{\ksyl}{max(1,ceil((\mbhh+2pt)/(\kskaro cm)))}%
   \begin{tikzpicture}[x=\ksxk cm,y=\ksyk cm,baseline=(current bounding box.north)]
     \draw[mbgitter,line width=0.3pt] (\ksxmin,\ksymin) grid[xstep=\ksxstep,ystep=\ksystep] (\ksxmax,\ksymax);
     \draw[-{Stealth[length=2mm]},line width=0.6pt] (\ksxmin,0) -- (\ksxpfeil,0) node[right] {\small\ksxlabel};
     \draw[-{Stealth[length=2mm]},line width=0.6pt] (0,\ksymin) -- (0,\ksypfeil) node[above] {\small\ksylabel};
-    \pgfmathsetmacro{\ksxa}{\ksxmin+\ksxstep}\pgfmathsetmacro{\ksxb}{\ksxmin+2*\ksxstep}
-    \foreach \x in {\ksxa,\ksxb,...,\ksxmax}{\ifdim \x pt=0pt\else\draw (\x,\ksty) -- (\x,-\ksty) node[below] {\scriptsize$\pgfmathprintnumber{\x}$};\fi}
-    \ifdim \ksxmin pt<0pt\draw (\ksxmin,\ksty) -- (\ksxmin,-\ksty) node[below] {\scriptsize$\ksxmin$};\fi
-    \pgfmathsetmacro{\ksya}{\ksymin+\ksystep}\pgfmathsetmacro{\ksyb}{\ksymin+2*\ksystep}
-    \foreach \y in {\ksya,\ksyb,...,\ksymax}{\ifdim \y pt=0pt\else\draw (\kstx,\y) -- (-\kstx,\y) node[left] {\scriptsize$\pgfmathprintnumber{\y}$};\fi}
-    \ifdim \ksymin pt<0pt\draw (\kstx,\ksymin) -- (-\kstx,\ksymin) node[left] {\scriptsize$\ksymin$};\fi
+    \foreach \x in {\ksxmin,\ksxa,...,\ksxmax}{\ifdim \x pt=0pt\else
+      \pgfmathtruncatemacro{\mbrest}{mod(abs(round(\x/\ksxstep)),\ksxl)}%
+      \draw (\x,\ksty) -- (\x,-\ksty)
+        \ifnum\mbrest=0 node[below,inner sep=1.5pt] {\mbtf$\pgfmathprintnumber{\x}$}\fi;\fi}
+    \foreach \y in {\ksymin,\ksya,...,\ksymax}{\ifdim \y pt=0pt\else
+      \pgfmathtruncatemacro{\mbrest}{mod(abs(round(\y/\ksystep)),\ksyl)}%
+      \draw (\kstx,\y) -- (-\kstx,\y)
+        \ifnum\mbrest=0 node[left,inner sep=1.5pt] {\mbtf$\pgfmathprintnumber{\y}$}\fi;\fi}
     \begin{scope}
     \clip (\ksxmin,\ksymin) rectangle (\ksxmax,\ksymax);
 }{\end{scope}\end{tikzpicture}}
@@ -316,11 +340,63 @@
   \end{tikzpicture}}
 
 % ---------------------------------------------------------------------------
+% Hilfsmakros für Körper (F) und Objekte im ksys3 (I)
+% ---------------------------------------------------------------------------
+% \mbrdrei x,y,z\relax → \mbrA \mbrB \mbrC ;  \mbrzwei a:b\relax → \mbrtmin \mbrtmax
+\def\mbrdrei#1,#2,#3\relax{\def\mbrA{#1}\def\mbrB{#2}\def\mbrC{#3}}
+\def\mbrzwei#1:#2\relax{\def\mbrtmin{#1}\def\mbrtmax{#2}}
+% Sichtbarkeit einer Fläche: \mbsicht{K}{L}{S}{M} setzt \mbvis auf 1, wenn die Fläche
+% durch K, L, S dem Betrachter zugewandt ist; M ist ein innerer Punkt des Körpers.
+% Blickvektor \mbvx,\mbvy,\mbvz (Richtung zum Betrachter) setzt der Aufrufer:
+% Körper in F (Tiefe nach rechts oben): (1|-2|1); ksys3: (2|1|1).
+\newcommand{\mbsicht}[4]{%
+  \expandafter\mbrdrei#1\relax\let\mbkx\mbrA\let\mbky\mbrB\let\mbkz\mbrC
+  \expandafter\mbrdrei#2\relax\let\mblx\mbrA\let\mbly\mbrB\let\mblz\mbrC
+  \expandafter\mbrdrei#3\relax\let\mbsx\mbrA\let\mbsy\mbrB\let\mbsz\mbrC
+  \expandafter\mbrdrei#4\relax\let\mbmx\mbrA\let\mbmy\mbrB\let\mbmz\mbrC
+  \pgfmathsetmacro{\mbnx}{(\mbly-\mbky)*(\mbsz-\mbkz)-(\mblz-\mbkz)*(\mbsy-\mbky)}%
+  \pgfmathsetmacro{\mbny}{(\mblz-\mbkz)*(\mbsx-\mbkx)-(\mblx-\mbkx)*(\mbsz-\mbkz)}%
+  \pgfmathsetmacro{\mbnz}{(\mblx-\mbkx)*(\mbsy-\mbky)-(\mbly-\mbky)*(\mbsx-\mbkx)}%
+  \pgfmathsetmacro{\mbda}{\mbnx*\mbvx+\mbny*\mbvy+\mbnz*\mbvz}%
+  \pgfmathsetmacro{\mbdb}{\mbnx*(\mbmx-\mbkx)+\mbny*(\mbmy-\mbky)+\mbnz*(\mbmz-\mbkz)}%
+  \pgfmathtruncatemacro{\mbvis}{(\mbda>0&&\mbdb<0)||(\mbda<0&&\mbdb>0)}}
+% Kante: \mbkante{n}{P}{Q} – durchgezogen, wenn n>0 (Zahl der sichtbaren Nachbarflächen)
+\newcommand{\mbkante}[3]{\pgfmathtruncatemacro{\mbkn}{#1}\ifnum\mbkn>0 \draw[line width=0.7pt] (#2) -- (#3);\else
+  \draw[dashed,line width=0.5pt] (#2) -- (#3);\fi}
+% Eckpunkte einer Rechteckpyramide aus Minimalecke (\mbpx,\mbpy,\mbpz), Kanten a (x-Richtung),
+% b (y-Richtung), Spitze S als Tripel → Makros \mbpa..\mbpd, \mbps und Komponenten
+\newcommand{\mbpyramideecken}[3]{%
+  \pgfmathsetmacro{\mbpax}{\mbpx}\pgfmathsetmacro{\mbpay}{\mbpy}\pgfmathsetmacro{\mbpaz}{\mbpz}%
+  \pgfmathsetmacro{\mbpbx}{\mbpx+(#1)}\let\mbpby\mbpay\let\mbpbz\mbpaz
+  \let\mbpcx\mbpbx\pgfmathsetmacro{\mbpcy}{\mbpy+(#2)}\let\mbpcz\mbpaz
+  \let\mbpdx\mbpax\let\mbpdy\mbpcy\let\mbpdz\mbpaz
+  \mbrdrei#3\relax\pgfmathsetmacro{\mbpsx}{\mbrA}\pgfmathsetmacro{\mbpsy}{\mbrB}\pgfmathsetmacro{\mbpsz}{\mbrC}%
+  \edef\mbpa{\mbpax,\mbpay,\mbpaz}\edef\mbpb{\mbpbx,\mbpby,\mbpbz}%
+  \edef\mbpc{\mbpcx,\mbpcy,\mbpcz}\edef\mbpd{\mbpdx,\mbpdy,\mbpdz}\edef\mbps{\mbpsx,\mbpsy,\mbpsz}}
+% Alle acht Kanten der Pyramide, verdeckte gestrichelt (nach \mbpyramideecken)
+\newcommand{\mbpyramidekanten}{%
+  \pgfmathsetmacro{\mbmx}{(\mbpax+\mbpcx)/4+\mbpsx/2}\pgfmathsetmacro{\mbmy}{(\mbpay+\mbpcy)/4+\mbpsy/2}%
+  \pgfmathsetmacro{\mbmz}{(\mbpaz+\mbpcz)/4+\mbpsz/2}\edef\mbpm{\mbmx,\mbmy,\mbmz}%
+  \mbsicht{\mbpa}{\mbpb}{\mbps}{\mbpm}\let\mbfa\mbvis
+  \mbsicht{\mbpb}{\mbpc}{\mbps}{\mbpm}\let\mbfb\mbvis
+  \mbsicht{\mbpc}{\mbpd}{\mbps}{\mbpm}\let\mbfc\mbvis
+  \mbsicht{\mbpd}{\mbpa}{\mbps}{\mbpm}\let\mbfd\mbvis
+  \mbsicht{\mbpa}{\mbpb}{\mbpc}{\mbpm}\let\mbfg\mbvis
+  \mbkante{\mbfg+\mbfa}{\mbpa}{\mbpb}\mbkante{\mbfg+\mbfb}{\mbpb}{\mbpc}%
+  \mbkante{\mbfg+\mbfc}{\mbpc}{\mbpd}\mbkante{\mbfg+\mbfd}{\mbpd}{\mbpa}%
+  \mbkante{\mbfd+\mbfa}{\mbpa}{\mbps}\mbkante{\mbfa+\mbfb}{\mbpb}{\mbps}%
+  \mbkante{\mbfb+\mbfc}{\mbpc}{\mbps}\mbkante{\mbfc+\mbfd}{\mbpd}{\mbps}}
+
+% ---------------------------------------------------------------------------
 % F  Körper (Schrägbild, Kavalier 45°, Tiefe halbiert)
 % ---------------------------------------------------------------------------
 % \quader{4}{2}{3}{a}{b}{c}   Länge, Tiefe, Höhe in cm; Labels (leer = ohne)
 % \zylinder{1.5}{3}{r}{h}     Radius, Höhe
 % \prismadreieck{4}{3}{2}{}{}{}   Grundkante, Grundhöhe (Dreieck), Tiefe
+% \pyramide{4}{3}{3.5}{a}{b}{h}  Rechteckpyramide: Grundkanten a (vorn), b (Tiefe), Höhe h;
+%                                quadratisch mit a = b. Höhe gestrichelt mit Fußpunkt.
+% \kegel{1.5}{3}{r}{h}{s}     Radius, Höhe; Labels r, h, s (Mantellinie), leer = ohne
+% \kugel{1.5}{r}              Radius; Äquator angedeutet, Radius gestrichelt
 \NewDocumentCommand{\quader}{m m m m m m}{%
   \begin{tikzpicture}[baseline=(current bounding box.north),
      x={(1cm,0cm)},y={(0.5cm,0.5cm)},z={(0cm,1cm)},line width=0.7pt]
@@ -339,7 +415,8 @@
     \draw (-#1,0) -- (-#1,#2); \draw (#1,0) -- (#1,#2);
     \draw (-#1,0) arc (180:360:{#1} and {#1*0.35});
     \draw[dashed,line width=0.5pt] (-#1,0) arc (180:0:{#1} and {#1*0.35});
-    \draw[dashed,line width=0.5pt] (0,#2) -- (#1,#2) node[midway,above,font=\small] {$#3$};
+    \fill (0,#2) circle (0.8pt);
+    \draw[dashed,line width=0.5pt] (0,#2) -- (#1,#2) node[midway,fill=white,inner sep=1pt,font=\small] {$#3$};
     \node[right,font=\small] at (#1,{#2/2}) {$#4$};
   \end{tikzpicture}}
 \NewDocumentCommand{\prismadreieck}{m m m m m m}{%
@@ -350,8 +427,43 @@
     \draw[dashed,line width=0.5pt] (0,0,0) -- (0,#3,0) -- (#1,#3,0);
     \draw[dashed,line width=0.5pt] (0,#3,0) -- ({#1/2},#3,#2);
     \node[below,font=\small] at ({#1/2},0,0) {$#4$};
-    \node[left,font=\small] at ({#1/4},0,{#2/2}) {$#5$};
+    \ifblank{#5}{}{\draw[dashed,line width=0.5pt] ({#1/2},0,0) -- ({#1/2},0,#2)
+      node[midway,right,inner sep=1.5pt,font=\small] {$#5$};
+      \draw[line width=0.4pt] ({#1/2},0,0.22) -- ({#1/2+0.22},0,0.22) -- ({#1/2+0.22},0,0);}
     \node[below right,font=\small] at (#1,{#3/2},0) {$#6$};
+  \end{tikzpicture}}
+\NewDocumentCommand{\pyramide}{m m m m m m}{%
+  \begin{tikzpicture}[baseline=(current bounding box.north),
+     x={(1cm,0cm)},y={(0.5cm,0.5cm)},z={(0cm,1cm)}]
+    \def\mbvx{1}\def\mbvy{-2}\def\mbvz{1}%
+    \def\mbpx{0}\def\mbpy{0}\def\mbpz{0}%
+    \mbpyramideecken{#1}{#2}{{(#1)/2},{(#2)/2},{#3}}%
+    \mbpyramidekanten
+    \fill ({(#1)/2},{(#2)/2},0) circle (0.8pt);
+    \draw[dashed,line width=0.5pt] ({(#1)/2},{(#2)/2},0) -- ({(#1)/2},{(#2)/2},#3)
+      node[midway,left,inner sep=1.5pt,font=\small] {$#6$};
+    \draw[line width=0.4pt] ({(#1)/2},{(#2)/2},0.22) -- ({(#1)/2+0.22},{(#2)/2},0.22) -- ({(#1)/2+0.22},{(#2)/2},0);
+    \node[below,font=\small] at ({(#1)/2},0,0) {$#4$};
+    \node[below right,font=\small] at (#1,{(#2)/2},0) {$#5$};
+  \end{tikzpicture}}
+\NewDocumentCommand{\kegel}{m m m m m}{%
+  \begin{tikzpicture}[baseline=(current bounding box.north),line width=0.7pt]
+    \draw (-#1,0) -- (0,#2) -- (#1,0);
+    \draw (-#1,0) arc (180:360:{#1} and {#1*0.35});
+    \draw[dashed,line width=0.5pt] (-#1,0) arc (180:0:{#1} and {#1*0.35});
+    \fill (0,0) circle (0.8pt);
+    \draw[dashed,line width=0.5pt] (0,0) -- (0,#2) node[midway,left,inner sep=1.5pt,font=\small] {$#4$};
+    \draw[dashed,line width=0.5pt] (0,0) -- (#1,0) node[midway,fill=white,inner sep=1pt,font=\small] {$#3$};
+    \draw[line width=0.4pt] (0,0.18) -- (0.18,0.18) -- (0.18,0);
+    \path (#1,0) -- (0,#2) node[midway,above right,inner sep=1.5pt,font=\small] {$#5$};
+  \end{tikzpicture}}
+\NewDocumentCommand{\kugel}{m m}{%
+  \begin{tikzpicture}[baseline=(current bounding box.north),line width=0.7pt]
+    \draw (0,0) circle (#1);
+    \draw[line width=0.5pt] (-#1,0) arc (180:360:{#1} and {#1*0.35});
+    \draw[dashed,line width=0.5pt] (-#1,0) arc (180:0:{#1} and {#1*0.35});
+    \fill (0,0) circle (0.8pt);
+    \draw[dashed,line width=0.5pt] (0,0) -- (#1,0) node[midway,fill=white,inner sep=1pt,font=\small] {$#2$};
   \end{tikzpicture}}
 
 % ---------------------------------------------------------------------------
@@ -403,6 +515,194 @@
   \end{tikzpicture}}
 
 % ---------------------------------------------------------------------------
+% J  Boxplot und Histogramm
+% ---------------------------------------------------------------------------
+% Boxplots mit gemeinsamer Achse, von unten nach oben; Gitter zum Selbstzeichnen.
+% \begin{boxplots}[xmin=0,xmax=20,xstep=2,xlabel=Punkte]
+%   \bp{4,7,9,13,18}{A}      Minimum, unteres Quartil, Median, oberes Quartil, Maximum
+%                            Label im Textmodus (Klasse 8a); Werte ausserhalb xmin..xmax -> Warnung
+%   \bp{}{B}                 leere Zeile: Schüler zeichnet selbst
+% \end{boxplots}
+% karo = Kantenlänge einer Gitterzelle in cm (Voreinstellung 0.5); der Maßstab
+% ergibt sich wie beim ksys aus karo und xstep.
+\pgfkeys{/bpl/.is family, /bpl,
+  xmin/.estore in=\bpxmin, xmax/.estore in=\bpxmax, xstep/.estore in=\bpxstep,
+  karo/.estore in=\bpkaro, xlabel/.estore in=\bpxlabel,
+  default/.style={xmin=0,xmax=20,xstep=2,karo=0.5,xlabel=$x$}}
+\newcounter{mbbp}
+\newenvironment{boxplots}[1][]{%
+  \pgfkeys{/bpl,default,#1}%
+  \setcounter{mbbp}{0}%
+  \pgfmathsetmacro{\bpk}{\bpkaro/\bpxstep}%
+  \pgfmathsetmacro{\bptx}{0.12*\bpxstep}%
+  \pgfmathsetmacro{\bppfeil}{\bpxmax+0.6*\bpxstep}%
+  \pgfmathsetmacro{\bpxa}{\bpxmin+\bpxstep}%
+  \ifdim\bpkaro cm<0.6cm \def\mbtf{\tiny}\else\def\mbtf{\scriptsize}\fi
+  \xdef\mbwmax{0pt}%
+  \foreach \x in {\bpxmin,\bpxa,...,\bpxmax}{\sbox\mbmessbox{\mbtf$\pgfmathprintnumber{\x}$}%
+    \ifdim\wd\mbmessbox>\mbwmax\xdef\mbwmax{\the\wd\mbmessbox}\fi}%
+  \pgfmathtruncatemacro{\bpl}{max(1,ceil((\mbwmax+2pt)/(\bpkaro cm)))}%
+  \begin{tikzpicture}[x=\bpk cm,y=1cm,baseline=(current bounding box.north)]
+}{%
+  \pgfmathsetmacro{\bphoehe}{1.2*\value{mbbp}+0.2}%
+  \draw[mbgitter,line width=0.3pt] (\bpxmin,0) grid[xstep=\bpxstep,ystep=\bpkaro] (\bpxmax,\bphoehe);
+  \draw[-{Stealth[length=2mm]},line width=0.6pt] (\bpxmin,0) -- (\bppfeil,0) node[right] {\small\bpxlabel};
+  \foreach \x in {\bpxmin,\bpxa,...,\bpxmax}{%
+    \pgfmathtruncatemacro{\mbrest}{mod(abs(round(\x/\bpxstep)),\bpl)}%
+    \draw (\x,0.12) -- (\x,-0.12)
+      \ifnum\mbrest=0 node[below,inner sep=1.5pt] {\mbtf$\pgfmathprintnumber{\x}$}\fi;}
+  \end{tikzpicture}}
+\def\mbbpfuenf#1,#2,#3,#4,#5\relax{\def\bpa{#1}\def\bpb{#2}\def\bpc{#3}\def\bpd{#4}\def\bpe{#5}}
+\NewDocumentCommand{\bp}{m m}{%
+  \stepcounter{mbbp}%
+  \pgfmathsetmacro{\bpy}{1.2*\value{mbbp}-0.6}%
+  \node[left,font=\small,inner sep=4pt] at (\bpxmin,\bpy) {#2};
+  \ifblank{#1}{}{%
+    \mbbpfuenf#1\relax
+    \pgfmathparse{(\bpa<\bpxmin)||(\bpe>\bpxmax)}\ifdim\pgfmathresult pt>0pt
+      \PackageWarning{mathblatt}{bp: Werte liegen ausserhalb von xmin..xmax}\fi
+    \pgfmathsetmacro{\bpu}{\bpy-0.35}\pgfmathsetmacro{\bpo}{\bpy+0.35}%
+    \draw[line width=0.7pt] (\bpa,\bpu) -- (\bpa,\bpo) (\bpe,\bpu) -- (\bpe,\bpo);
+    \draw[line width=0.7pt] (\bpa,\bpy) -- (\bpb,\bpy) (\bpd,\bpy) -- (\bpe,\bpy);
+    \filldraw[fill=mbkasten,line width=0.7pt] (\bpb,\bpu) rectangle (\bpd,\bpo);
+    \draw[line width=1pt] (\bpc,\bpu) -- (\bpc,\bpo);}}
+% Histogramm: Klassen als  von:bis/Höhe , durch Komma getrennt.
+% \histogramm{0:10/4, 10:20/9, 20:40/6}                 Höhe = Häufigkeit
+% \histogramm[dichte]{0:10/4, 10:20/9, 20:40/6}         Höhe = Häufigkeit / Klassenbreite
+% \histogramm{0:10/, 10:20/, 20:40/}                    nur Achsen und Klassengrenzen
+% Schlüssel: ymax, ystep, karo, xlabel, ylabel, dichte
+\pgfkeys{/hst/.is family, /hst,
+  ymax/.estore in=\hsymax, ystep/.estore in=\hsystep, xstep/.estore in=\hsxstep,
+  karo/.estore in=\hskaro, xlabel/.estore in=\hsxlabel, ylabel/.estore in=\hsylabel,
+  dichte/.is if=mbhsdichte,
+  default/.style={ymax=10,ystep=1,xstep=10,karo=0.5,xlabel=$x$,ylabel=$h$}}
+\newif\ifmbhsdichte
+\NewDocumentCommand{\histogramm}{O{} m}{%
+  \mbhsdichtefalse\pgfkeys{/hst,default,#1}%
+  \def\hsxa{}\def\hsxb{}%
+  \foreach \k/\h in {#2}{\expandafter\mbrzwei\k\relax
+    \ifx\hsxa\empty\xdef\hsxa{\mbrtmin}\fi\xdef\hsxb{\mbrtmax}}%
+  \pgfmathsetmacro{\hsxk}{\hskaro/\hsxstep}%
+  \pgfmathsetmacro{\hsyk}{\hskaro/\hsystep}%
+  \pgfmathsetmacro{\hsxpfeil}{\hsxb+0.6*\hsxstep}%
+  \pgfmathsetmacro{\hsypfeil}{\hsymax+0.6*\hsystep}%
+  \ifdim\hskaro cm<0.6cm \def\mbtf{\tiny}\else\def\mbtf{\scriptsize}\fi
+  \begin{tikzpicture}[x=\hsxk cm,y=\hsyk cm,baseline=(current bounding box.north)]
+    \draw[mbgitter,line width=0.3pt] (\hsxa,0) grid[xstep=\hsxstep,ystep=\hsystep] (\hsxb,\hsymax);
+    \foreach \k/\h in {#2}{\expandafter\mbrzwei\k\relax
+      \ifx\h\empty\else
+        \ifmbhsdichte\pgfmathsetmacro{\hsh}{(\h)/(\mbrtmax-\mbrtmin)}\else\pgfmathsetmacro{\hsh}{\h}\fi
+        \filldraw[fill=mbkasten,line width=0.7pt] (\mbrtmin,0) rectangle (\mbrtmax,\hsh);
+      \fi}%
+    \draw[-{Stealth[length=2mm]},line width=0.6pt] (\hsxa,0) -- (\hsxpfeil,0) node[right] {\small\hsxlabel};
+    \draw[-{Stealth[length=2mm]},line width=0.6pt] (\hsxa,0) -- (\hsxa,\hsypfeil) node[above] {\small\hsylabel};
+    \foreach \k/\h [count=\i] in {#2}{\expandafter\mbrzwei\k\relax
+      \ifnum\i=1 \draw (\mbrtmin,{0.12*\hsystep}) -- (\mbrtmin,{-0.12*\hsystep})
+        node[below,inner sep=1.5pt] {\mbtf$\pgfmathprintnumber{\mbrtmin}$};\fi
+      \draw (\mbrtmax,{0.12*\hsystep}) -- (\mbrtmax,{-0.12*\hsystep})
+        node[below,inner sep=1.5pt] {\mbtf$\pgfmathprintnumber{\mbrtmax}$};}%
+    \pgfmathsetmacro{\hsya}{\hsystep}\pgfmathsetmacro{\hsyb}{2*\hsystep}%
+    \foreach \y in {\hsya,\hsyb,...,\hsymax}{\ifdim \y pt=0pt\else
+      \draw (\hsxa,\y) ++({0.12*\hsxstep},0) -- ++({-0.24*\hsxstep},0)
+        node[left,inner sep=1.5pt] {\mbtf$\pgfmathprintnumber{\y}$};\fi}
+  \end{tikzpicture}}
+
+% ---------------------------------------------------------------------------
+% K  Kreis und Winkelfiguren (Maße in cm, Winkel in Grad, 0 Grad = rechts)
+% ---------------------------------------------------------------------------
+% Ein Kreis mit Zusätzen: Umgebung kreis, Radius in cm.
+% \begin{kreis}[2]                          Radius 2 cm (Voreinstellung 2)
+%   \mittelpunkt{M}                         Punkt und Label in der Mitte
+%   \radius{40}{r}                          Radius zum Randpunkt bei 40 Grad
+%   \durchmesser{0}{d}                      Durchmesser durch den Mittelpunkt
+%   \sehne{200}{340}{s}                     Sehne zwischen zwei Randpunkten
+%   \tangente{300}{t}                       Tangente im Randpunkt, Beruehrpunkt markiert
+%   \sektor{30}{110}{\alpha}                grau gefuellter Sektor, Winkel beschriftet
+%   \bogen{30}{110}{b}                      nur der Bogen, dicker gezeichnet
+%   \kreispunkt{110}{B}                     Punkt auf dem Rand mit Label
+% \end{kreis}
+% Winkel werden gegen den Uhrzeigersinn gezaehlt; leeres Label {} laesst es weg.
+\pgfkeys{/krs/.is family, /krs, r/.estore in=\krr, default/.style={r=2}}
+\newenvironment{kreis}[1][2]{%
+  \pgfkeys{/krs,default,r=#1}%
+  \begin{tikzpicture}[baseline=(current bounding box.north),line width=0.7pt]
+    \draw (0,0) circle (\krr);
+}{\end{tikzpicture}}
+% \mblabel{Text}{Position}{Optionen} – setzt nichts, wenn der Text leer ist
+\newcommand{\mbklabel}[3]{\ifblank{#1}{}{\node[#3,font=\small] at #2 {$#1$};}}
+\newcommand{\mittelpunkt}[1]{\fill (0,0) circle (1.6pt);
+  \mbklabel{#1}{(0,0)}{below left,inner sep=3pt}}
+\NewDocumentCommand{\kreispunkt}{O{} m m}{%
+  \fill (#2:\krr) circle (1.6pt);
+  \mbklabel{#3}{({#2}:{\krr+0.3})}{#1}}
+\newcommand{\radius}[2]{%
+  \draw[line width=0.7pt] (0,0) -- (#1:\krr);
+  \mbklabel{#2}{({#1}:{0.55*\krr})}{fill=white,inner sep=1pt}}
+\newcommand{\durchmesser}[2]{%
+  \draw[line width=0.7pt] ({#1+180}:\krr) -- (#1:\krr);
+  \mbklabel{#2}{({#1}:{0.6*\krr})}{fill=white,inner sep=1pt}}
+\newcommand{\sehne}[3]{%
+  \draw[line width=0.7pt] (#1:\krr) -- (#2:\krr);
+  \mbklabel{#3}{($0.5*(#1:\krr)+0.5*(#2:\krr)$)}{fill=white,inner sep=1pt}}
+% Tangente: Beruehrpunkt bei #1, rechter Winkel zum Radius markiert
+\newcommand{\tangente}[2]{%
+  \pgfmathsetmacro{\krl}{0.85*\krr}%
+  \draw[dashed,line width=0.5pt] (0,0) -- (#1:\krr);
+  \draw[line width=0.7pt] ($(#1:\krr)+({#1+90}:\krl)$) -- ($(#1:\krr)+({#1-90}:\krl)$);
+  \draw[line width=0.4pt] ($(#1:\krr)+({#1+90}:0.22)$) -- ($(#1:\krr)+({#1+90}:0.22)+({#1+180}:0.22)$)
+    -- ($(#1:\krr)+({#1+180}:0.22)$);
+  \fill (#1:\krr) circle (1.4pt);
+  \mbklabel{#2}{($(#1:\krr)+({#1-90}:{0.75*\krl})$)}{fill=white,inner sep=1pt}}
+\newcommand{\sektor}[3]{%
+  \filldraw[fill=mbgrau,fill opacity=0.15,line width=0.7pt]
+    (0,0) -- (#1:\krr) arc (#1:#2:\krr) -- cycle;
+  \pgfmathsetmacro{\krm}{(#1+#2)/2}%
+  \mbklabel{#3}{(\krm:{0.45*\krr})}{}}
+\newcommand{\bogen}[3]{%
+  \draw[line width=1.1pt] (#1:\krr) arc (#1:#2:\krr);
+  \pgfmathsetmacro{\krm}{(#1+#2)/2}%
+  \mbklabel{#3}{(\krm:{\krr+0.32})}{}}
+% Winkelfiguren
+% \geradenkreuzung{35}{\alpha}{\beta}{\gamma}{\delta}  zwei Geraden durch einen Punkt;
+%   alpha rechts oben, beta links oben, gamma links unten (Scheitel zu alpha), delta rechts unten
+% \parallelenpaar{60}{\alpha}{\beta}{\gamma}{\delta}   zwei Parallelen mit Schnittgerade;
+%   alpha, beta an der oberen Kreuzung (rechts oben, links oben), gamma, delta an der unteren
+% \winkel[4]{40}{\alpha}   ein Winkel, Schenkellaenge 4 cm (Voreinstellung 3)
+\NewDocumentCommand{\geradenkreuzung}{m m m m m}{%
+  \begin{tikzpicture}[baseline=(current bounding box.north),line width=0.7pt]
+    \draw (180:2.4) -- (0:2.4);
+    \draw ({#1+180}:2.4) -- (#1:2.4);
+    \draw[mbgrau,line width=0.5pt] (0.75,0) arc (0:#1:0.75);
+    \pgfmathsetmacro{\wka}{#1/2}\pgfmathsetmacro{\wkb}{(#1+180)/2}%
+    \mbklabel{#2}{(\wka:1.1)}{}\mbklabel{#3}{(\wkb:1.1)}{}%
+    \mbklabel{#4}{({\wka+180}:1.1)}{}\mbklabel{#5}{({\wkb+180}:1.1)}{}%
+    \fill (0,0) circle (1.4pt);
+  \end{tikzpicture}}
+\NewDocumentCommand{\parallelenpaar}{m m m m m}{%
+  \begin{tikzpicture}[baseline=(current bounding box.north),line width=0.7pt]
+    \pgfmathsetmacro{\wpdx}{2.2*cos(#1)/sin(#1)}% cot statt 1/tan wegen #1 = 90
+    \pgfmathsetmacro{\wpl}{min(\wpdx,0)-1.5}\pgfmathsetmacro{\wpr}{max(\wpdx,0)+1.5}%
+    \coordinate (Q) at (0,0); \coordinate (P) at (\wpdx,2.2);
+    \draw (\wpl,0) -- (\wpr,0); \draw (\wpl,2.2) -- (\wpr,2.2);
+    \draw ($(Q)+({#1+180}:1.1)$) -- ($(P)+({#1}:1.1)$);
+    \foreach \s in {P,Q}{%
+      \draw[mbgrau,line width=0.5pt] ($(\s)+(0.7,0)$) arc (0:#1:0.7);
+      \draw[mbgrau,line width=0.5pt] ($(\s)+({#1}:0.7)$) arc (#1:180:0.7);
+      \fill (\s) circle (1.4pt);}%
+    \pgfmathsetmacro{\wpa}{#1/2}\pgfmathsetmacro{\wpb}{(#1+180)/2}%
+    \mbklabel{#2}{($(P)+({\wpa}:1.05)$)}{}\mbklabel{#3}{($(P)+({\wpb}:1.05)$)}{}%
+    \mbklabel{#4}{($(Q)+({\wpa}:1.05)$)}{}\mbklabel{#5}{($(Q)+({\wpb}:1.05)$)}{}%
+  \end{tikzpicture}}
+\NewDocumentCommand{\winkel}{O{3} m m}{%
+  \begin{tikzpicture}[baseline=(current bounding box.north),line width=0.7pt]
+    \draw (0:#1) -- (0,0) -- (#2:#1);
+    \draw[mbgrau,line width=0.5pt] (0.7,0) arc (0:#2:0.7);
+    \pgfmathsetmacro{\wka}{#2/2}%
+    \mbklabel{#3}{(\wka:1.1)}{}%
+    \fill (0,0) circle (1.4pt);
+  \end{tikzpicture}}
+
+% ---------------------------------------------------------------------------
 % I  Koordinatensystem 3D (Kavalierprojektion nach Masterprompt §4.5)
 % ---------------------------------------------------------------------------
 % x2 waagerecht, x3 senkrecht, x1 unter 45° nach links unten, halbiert.
@@ -422,7 +722,12 @@
 %   \rgerade[-1:1.5]{3,1,-1}{0,1,2}{h}     Parameterbereich t = -1..1,5 statt Rand; Label am Ende (t max)
 %   \rebene{4}{6}{3}{E}                    Spurdreieck aus den Achsenabschnitten (x1|x2|x3)
 %   \rebenepar{1,1,1}{2,1,0}{0,2,2}{F}     Parallelogramm: Stützpunkt, zwei Spannvektoren (als Pfeile)
+%   \rebenepar*{0,0,3}{4,0,1}{0,5,0}{D}    Sternform: Fläche ohne Spannvektorpfeile (Dach, Wand)
+%   \rquader{1,1,0}{3}{4}{2}               Quader: Ecke mit kleinsten Koordinaten, Kanten a (x1), b (x2), c (x3)
+%   \rpyramide{0,1,0}{4}{3}{2,2.5,5}       Rechteckpyramide: Ecke, Kanten a (x1), b (x2), Spitze
 % \end{ksys3}
+% Körper im ksys3 tragen keine Labels; Eckpunkte setzt der Nutzer mit \rpunkt*.
+% Verdeckte Kanten sind gestrichelt (Betrachter in Richtung (2|1|1)).
 % Punkte und Vektoren der Vektor-, Geraden- und Ebenenmakros stehen als Tripel
 % {x1,x2,x3} in einem Argument (LaTeX erlaubt höchstens 9 Argumente). \rpunkt und
 % \rebene behalten getrennte Argumente.
@@ -483,8 +788,6 @@
   \draw[-{Stealth[length=2mm]},line width=0.8pt] (#2) -- (#3) node[midway,#1,font=\small] {$#4$};}
 % Gerade: ohne Parameterbereich wird t so gewählt, dass die Gerade genau im Quader
 % x1min..x1max, x2min..x2max, x3min..x3max liegt (Liang-Barsky je Achse).
-\def\mbrdrei#1,#2,#3\relax{\def\mbrA{#1}\def\mbrB{#2}\def\mbrC{#3}}
-\def\mbrzwei#1:#2\relax{\def\mbrtmin{#1}\def\mbrtmax{#2}}
 \newcommand{\mbrclip}[4]{% p, u, min, max -> engt \mbrtmin, \mbrtmax ein
   \pgfmathsetmacro{\mbru}{#2}%
   \ifdim\mbru pt=0pt
@@ -516,11 +819,30 @@
 \NewDocumentCommand{\rebene}{O{} m m m m}{%
   \filldraw[fill=mbgrau,fill opacity=0.15,line width=0.6pt] (#2,0,0) -- (0,#3,0) -- (0,0,#4) -- cycle;
   \node[font=\small,#1] at ({(#2)/3},{(#3)/3},{(#4)/3}) {$#5$};}
-\NewDocumentCommand{\rebenepar}{O{} m m m m}{%
+\NewDocumentCommand{\rebenepar}{s O{} m m m m}{%
   \filldraw[fill=mbgrau,fill opacity=0.15,line width=0.6pt]
-    (#2) -- ($(#2)+(#3)$) -- ($(#2)+(#3)+(#4)$) -- ($(#2)+(#4)$) -- cycle;
-  \draw[-{Stealth[length=2mm]},line width=0.8pt] (#2) -- ($(#2)+(#3)$);
-  \draw[-{Stealth[length=2mm]},line width=0.8pt] (#2) -- ($(#2)+(#4)$);
-  \node[font=\small,#1] at ($(#2)+0.5*(#3)+0.5*(#4)$) {$#5$};}
+    (#3) -- ($(#3)+(#4)$) -- ($(#3)+(#4)+(#5)$) -- ($(#3)+(#5)$) -- cycle;
+  \IfBooleanF{#1}{%
+    \draw[-{Stealth[length=2mm]},line width=0.8pt] (#3) -- ($(#3)+(#4)$);
+    \draw[-{Stealth[length=2mm]},line width=0.8pt] (#3) -- ($(#3)+(#5)$);}%
+  \node[font=\small,#2] at ($(#3)+0.5*(#4)+0.5*(#5)$) {$#6$};}
+% Körper im ksys3: Betrachter steht in Richtung (2|1|1), sichtbar sind die Flächen mit
+% den größten Koordinaten. Beim Quader sind die drei Kanten an der Minimalecke verdeckt.
+\NewDocumentCommand{\rquader}{m m m m}{%
+  \mbrdrei#1\relax
+  \pgfmathsetmacro{\mbqa}{min(\mbrA,\mbrA+(#2))}\pgfmathsetmacro{\mbqA}{max(\mbrA,\mbrA+(#2))}%
+  \pgfmathsetmacro{\mbqb}{min(\mbrB,\mbrB+(#3))}\pgfmathsetmacro{\mbqB}{max(\mbrB,\mbrB+(#3))}%
+  \pgfmathsetmacro{\mbqc}{min(\mbrC,\mbrC+(#4))}\pgfmathsetmacro{\mbqC}{max(\mbrC,\mbrC+(#4))}%
+  \draw[dashed,line width=0.5pt] (\mbqA,\mbqb,\mbqc) -- (\mbqa,\mbqb,\mbqc) -- (\mbqa,\mbqB,\mbqc)
+    (\mbqa,\mbqb,\mbqc) -- (\mbqa,\mbqb,\mbqC);
+  \draw[line width=0.7pt] (\mbqA,\mbqb,\mbqc) -- (\mbqA,\mbqB,\mbqc) -- (\mbqa,\mbqB,\mbqc)
+    (\mbqA,\mbqb,\mbqc) -- (\mbqA,\mbqb,\mbqC) (\mbqA,\mbqB,\mbqc) -- (\mbqA,\mbqB,\mbqC)
+    (\mbqa,\mbqB,\mbqc) -- (\mbqa,\mbqB,\mbqC)
+    (\mbqa,\mbqb,\mbqC) -- (\mbqA,\mbqb,\mbqC) -- (\mbqA,\mbqB,\mbqC) -- (\mbqa,\mbqB,\mbqC) -- cycle;}
+\NewDocumentCommand{\rpyramide}{m m m m}{%
+  \def\mbvx{2}\def\mbvy{1}\def\mbvz{1}%
+  \mbrdrei#1\relax\let\mbpx\mbrA\let\mbpy\mbrB\let\mbpz\mbrC
+  \mbpyramideecken{#2}{#3}{#4}%
+  \mbpyramidekanten}
 
 \endinput
