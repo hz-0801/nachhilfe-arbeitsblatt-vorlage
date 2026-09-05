@@ -1,5 +1,5 @@
 mathblatt.sty – Anleitung (Stufe 1)
-Gehört zu Vorlagenversion 2026-09-04f. Die Version steht in Zeile 2 der `mathblatt.sty`. Weichen beide ab, gilt die Vorlage: Makros, die sie nicht kennt, benutzt du nicht, und du meldest die Abweichung in einer Zeile im Ausgabeblock.
+Gehört zu Vorlagenversion 2026-09-05a. Die Version steht in Zeile 2 der `mathblatt.sty`. Weichen beide ab, gilt die Vorlage: Makros, die sie nicht kennt, benutzt du nicht, und du meldest die Abweichung in einer Zeile im Ausgabeblock.
  
 Datei `mathblatt.sty` neben die .tex-Datei legen, `\usepackage{mathblatt}` im Kopf. Kompilieren mit `xelatex` (nicht pdflatex): nur so sind Umlaute, ß, € und die Textextraktion sauber, weil im Sandbox keine Type-1-T1-Schriften liegen. Das Modell schreibt nur Inhalt; Ränder, Karogrößen, Fluchten und Fußzeile sind fest.
  
@@ -8,7 +8,7 @@ Anführungszeichen direkt in den Quelltext. `\ss`, `\euro`, `\"a` und `\glqq` si
 zuverlässig. Bei Zahlen mit Dezimalkomma in Mathematik `$0{,}5$` schreiben, damit der Abstand stimmt.
  
 Beschriftungen: Alle Label-Argumente der Grafikmakros – `\gerade`, `\parabel`, `\funktion`, `\punkt`,
-`\steigungsdreieck`, `\dreieck`, `\rpunkt`, die Körper – werden vom Makro selbst in Mathematik gesetzt. Du
+`\steigungsdreieck`, `\dreieck`, `\rpunkt`, `\rvektor`, `\rgerade`, `\rebene`, die Körper – werden vom Makro selbst in Mathematik gesetzt. Du
 übergibst also `g`, `g_1`, `\alpha`, nicht `$g$`. Ausnahme sind die Achsentitel `xlabel`/`ylabel` im
 `ksys`: die stehen im Textmodus, dort schreibst du `t in min` direkt und Mathematik mit Dollarzeichen.
  
@@ -68,8 +68,16 @@ Koordinatensystem 3D (Kavalierprojektion)
 \begin{ksys3}[x1min=-2,x1max=6,x2min=-3,x2max=6,x3min=-2,x3max=5]   Voreinstellung; Bereiche ganzzahlig
 \begin{ksys3}[xyz]                                                Sek I: Achsen x, y, z
 \begin{ksys3}[...,x1schritt=2]                                    x1 nur bei 2, 4, 6 beziffert
+\begin{ksys3}[leit]                                               Leitgrafik im Übersichtskasten: Karo 4 mm, alle Achsen 0..2
   \rpunkt{4}{4}{4}{A}                    Punkt mit Lot: entlang x1, dann parallel x2, dann parallel x3
   \rpunkt[below right]{6}{-2}{-1}{C}     Labelposition wie bei TikZ-Knoten (Voreinstellung above right)
+  \rpunkt*{1}{1.5}{1.5}{S}               Punkt ohne Lot: Durchstoß-, Schnitt-, Spurpunkt
+  \rvektor{2,4,3}{\vec a}                Ortsvektor vom Ursprung, Label in der Pfeilmitte
+  \rvektorab[below]{1,1,0}{4,5,2}{\vec u}   Pfeil von A nach B; optionales Argument = Labelposition
+  \rgerade{0,-2,1}{1,1,0.5}{g}           Stützpunkt, Richtungsvektor; läuft bis zum Rand des Achsenbereichs
+  \rgerade[-1:1.5]{3,1,-1}{0,1,2}{h}     Parameterbereich t = −1 … 1,5 statt Rand; Label am Ende bei t max
+  \rebene{4}{6}{3}{E}                    Spurdreieck aus den Achsenabschnitten x1 = 4, x2 = 6, x3 = 3
+  \rebenepar{1,1,1}{2,1,0}{0,2,2}{F}     Parallelogramm: Stützpunkt, zwei Spannvektoren (werden als Pfeile gezeichnet)
 \end{ksys3}
 ```
  
@@ -77,7 +85,11 @@ x₂ waagerecht, x₃ senkrecht, x₁ unter 45° nach links unten mit halber Lä
  
 `\rpunkt` zeichnet erst das Lot, dann den Punkt; das Label steht im Mathemodus. Koordinaten mit Dezimalpunkt (`2.5`). Negative Koordinaten in Labels und Aufgabentexten als `C(6|{-2}|{-1})` schreiben, sonst setzt LaTeX Binärabstände um das Minus. Um den Ursprung liegen die Zahlen dreier Achsen dicht beieinander; bei Karo 5 mm und x₁ bis 6 ist das lesbar, bei längerem x₁-Bereich `x1schritt=2` setzen.
  
-Innerhalb von `ksys3` gelten Raumkoordinaten. Was die Vorlage noch nicht als Makro hat – Vektor, Gerade, Ebene, Durchstoßpunkt –, zeichnest du mit gewöhnlichem TikZ, z. B. `\draw[-{Stealth[length=2mm]},line width=0.8pt] (1,2,0) -- (3,4,2);` für einen Vektor; die Projektion übernimmt die Umgebung. Ein Standardsystem ist rund 13 cm breit, zwei nebeneinander passen nicht. Nicht mit den Körpern auf ein Blatt (andere Blickrichtung, siehe unten).
+Punkte und Vektoren der Vektor-, Geraden- und Ebenenmakros stehen als Tripel `{x1,x2,x3}` in einem Argument; nur `\rpunkt` und `\rebene` haben getrennte Argumente. Der Stützvektor einer Geraden oder Ebene ist nicht Teil des Makros – bei Bedarf `\rvektor{1,1,1}{\vec p}` davorsetzen. Vektorlabels sitzen in der Pfeilmitte; liegt die Mitte nahe einer Achse, kollidiert das Label mit der Bezifferung – dann die Position im optionalen Argument ändern (`[below right]`, `[above left]`). Ebenenlabels sitzen in der Flächenmitte; das optionale Argument nimmt Knotenoptionen wie `[above right]`.
+
+`\rgerade` ohne Parameterbereich endet genau dort, wo die Gerade den Bereich x1min..x1max, x2min..x2max, x3min..x3max verlässt. Verlässt sie ihn über die x₁-Grenze, endet sie mitten im Bild – dann `x1max` vergrößern oder den Bereich als `[tmin:tmax]` vorgeben. Liegt die Gerade ganz außerhalb, warnt das Log (`Package mathblatt Warning`) und zeichnet t = −1 … 3. Richtungsvektoren, die ein Vielfaches von (2|1|1) sind, haben in dieser Projektion kein Bild (Gerade erscheint als Punkt) – solche Aufgabenwerte vermeiden. Das Spurdreieck braucht drei Achsenabschnitte; Ebenen parallel zu einer Achse zeichnest du als `\rebenepar` oder mit freiem TikZ.
+
+Innerhalb von `ksys3` gelten Raumkoordinaten. Was die Vorlage nicht als Makro hat, zeichnest du mit gewöhnlichem TikZ, z. B. `\draw[dashed] (1,2,0) -- (3,4,2);`; die Projektion übernimmt die Umgebung. Ein Standardsystem ist rund 13 cm breit, zwei nebeneinander passen nicht. `[leit]` ergibt ein etwa 4 cm großes System für den Übersichtskasten; weitere Schlüssel dahinter überschreiben es (`[leit,x2max=3]`). Nicht mit den Körpern auf ein Blatt (andere Blickrichtung, siehe unten).
  
 Geometrie und Körper (Maße in cm)
  
@@ -102,4 +114,4 @@ Stochastik
  
 Noch nicht in Stufe 1
  
-Kreis, Winkelfiguren, Pyramide/Kegel/Kugel, Netze, dreistufiger Baum, Kreisdiagramm, Histogramm, Analysis-Darstellungen; im 3D-System Vektor, Gerade, Ebene und Durchstoßpunkt als eigene Makros – Bausteinliste Stufe 2/3.
+Kreis, Winkelfiguren, Pyramide/Kegel/Kugel, Netze, dreistufiger Baum, Kreisdiagramm, Histogramm, Analysis-Darstellungen; im 3D-System Körper, Spurgeraden und Ebenen ohne Achsenabschnitte – Bausteinliste Stufe 2/3.

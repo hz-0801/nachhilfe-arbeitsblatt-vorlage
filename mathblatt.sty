@@ -1,5 +1,5 @@
 % mathblatt.sty – Vorlage für Nachhilfe-Arbeitsblätter, Stufe 1 (Kern Sek I)
-% Version 2026-09-04f (ksys3 und rpunkt: räumliches Koordinatensystem, Kavalierprojektion)
+% Version 2026-09-05a (ksys3: rvektor, rgerade, rebene, rpunkt*, Stil leit)
 %
 % Verwendung:  \usepackage{mathblatt}   (Datei neben der .tex-Datei)
 % Kompilieren mit  xelatex  (saubere Schrift, Umlaute, €, Textextraktion);
@@ -8,7 +8,7 @@
 % Inhalt; Layout, Grafikgrößen und Ausrichtung sind hier festgelegt.
 %
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{mathblatt}[2026/09/04 Nachhilfe-Arbeitsblatt v2]
+\ProvidesPackage{mathblatt}[2026/09/05 Nachhilfe-Arbeitsblatt v2]
 
 \RequirePackage[a4paper,margin=18mm,top=16mm,bottom=18mm]{geometry}
 \RequirePackage{iftex}
@@ -412,9 +412,20 @@
 % \begin{ksys3}[xyz]                                   Sek I: Achsen x,y,z
 % \begin{ksys3}[...,karo=0.4]                          Karo = Kantenlänge einer Gitterzelle in cm
 % \begin{ksys3}[...,x1schritt=2]                       x1 nur bei 2, 4, 6 beziffert (bei engem System)
+% \begin{ksys3}[leit]                                  Leitgrafik im Übersichtskasten: Karo 4 mm, 0..2
 %   \rpunkt{4}{4}{3}{A}               Punkt mit Lot: entlang x1, dann parallel x2, dann parallel x3
 %   \rpunkt[below right]{4}{4}{3}{A}  Labelposition wie bei TikZ-Knoten (Voreinstellung above right)
+%   \rpunkt*{1}{1.5}{1.5}{S}          Punkt ohne Lot (Durchstoß-, Schnitt-, Spurpunkt)
+%   \rvektor{2,4,3}{\vec a}                Ortsvektor vom Ursprung, Label in Pfeilmitte
+%   \rvektorab[below]{1,1,0}{4,5,2}{\vec u}  Pfeil von A nach B (erstes Argument: Labelposition)
+%   \rgerade{0,-2,1}{1,1,0.5}{g}           Stützpunkt, Richtungsvektor; läuft bis zum Rand des Achsenquaders
+%   \rgerade[-1:1.5]{3,1,-1}{0,1,2}{h}     Parameterbereich t = -1..1,5 statt Rand; Label am Ende (t max)
+%   \rebene{4}{6}{3}{E}                    Spurdreieck aus den Achsenabschnitten (x1|x2|x3)
+%   \rebenepar{1,1,1}{2,1,0}{0,2,2}{F}     Parallelogramm: Stützpunkt, zwei Spannvektoren (als Pfeile)
 % \end{ksys3}
+% Punkte und Vektoren der Vektor-, Geraden- und Ebenenmakros stehen als Tripel
+% {x1,x2,x3} in einem Argument (LaTeX erlaubt höchstens 9 Argumente). \rpunkt und
+% \rebene behalten getrennte Argumente.
 % Das 5-mm-Gitter wird am Ende hinter die ganze gezeichnete Fläche gelegt; Punkte
 % außerhalb der Achsbereiche liegen trotzdem auf Karo, die Achsen enden dann aber vor
 % ihnen. Nicht mit den Körpern aus Abschnitt F auf einem Blatt kombinieren, die haben
@@ -427,6 +438,7 @@
   karo/.estore in=\ksdkaro, x1schritt/.estore in=\ksaschritt,
   x1name/.estore in=\ksaname, x2name/.estore in=\ksbname, x3name/.estore in=\kscname,
   xyz/.style={x1name=x,x2name=y,x3name=z},
+  leit/.style={karo=0.4,x1min=0,x1max=2,x2min=0,x2max=2,x3min=0,x3max=2},
   default/.style={x1min=-2,x1max=6,x2min=-3,x2max=6,x3min=-2,x3max=5,karo=0.5,x1schritt=1,
                   x1name=x_1,x2name=x_2,x3name=x_3}}
 % Gitter über die gesamte gezeichnete Fläche, auf Karo-Vielfache gerastert, ein Karo Rand
@@ -462,8 +474,53 @@
       \draw (0,0.12,\c) -- (0,-0.12,\c) node[left] {\scriptsize$\pgfmathprintnumber{\c}$};\fi}
 }{\end{tikzpicture}}
 % Objekte im ksys3
-\NewDocumentCommand{\rpunkt}{O{above right} m m m m}{%
-  \draw[dashed,line width=0.5pt] (0,0,0) -- (#2,0,0) -- (#2,#3,0) -- (#2,#3,#4);
-  \fill (#2,#3,#4) circle (1.6pt) node[#1,font=\small] {$#5$};}
+\NewDocumentCommand{\rpunkt}{s O{above right} m m m m}{%
+  \IfBooleanF{#1}{\draw[dashed,line width=0.5pt] (0,0,0) -- (#3,0,0) -- (#3,#4,0) -- (#3,#4,#5);}%
+  \fill (#3,#4,#5) circle (1.6pt) node[#2,font=\small] {$#6$};}
+\NewDocumentCommand{\rvektor}{O{above right} m m}{%
+  \draw[-{Stealth[length=2mm]},line width=0.8pt] (0,0,0) -- (#2) node[midway,#1,font=\small] {$#3$};}
+\NewDocumentCommand{\rvektorab}{O{above right} m m m}{%
+  \draw[-{Stealth[length=2mm]},line width=0.8pt] (#2) -- (#3) node[midway,#1,font=\small] {$#4$};}
+% Gerade: ohne Parameterbereich wird t so gewählt, dass die Gerade genau im Quader
+% x1min..x1max, x2min..x2max, x3min..x3max liegt (Liang-Barsky je Achse).
+\def\mbrdrei#1,#2,#3\relax{\def\mbrA{#1}\def\mbrB{#2}\def\mbrC{#3}}
+\def\mbrzwei#1:#2\relax{\def\mbrtmin{#1}\def\mbrtmax{#2}}
+\newcommand{\mbrclip}[4]{% p, u, min, max -> engt \mbrtmin, \mbrtmax ein
+  \pgfmathsetmacro{\mbru}{#2}%
+  \ifdim\mbru pt=0pt
+    \pgfmathparse{((#1)<(#3))||((#1)>(#4))}\ifdim\pgfmathresult pt>0pt \def\mbrleer{1}\fi
+  \else
+    \pgfmathsetmacro{\mbrta}{((#3)-(#1))/(#2)}%
+    \pgfmathsetmacro{\mbrtb}{((#4)-(#1))/(#2)}%
+    \pgfmathsetmacro{\mbrtmin}{max(\mbrtmin,min(\mbrta,\mbrtb))}%
+    \pgfmathsetmacro{\mbrtmax}{min(\mbrtmax,max(\mbrta,\mbrtb))}%
+  \fi}
+\NewDocumentCommand{\rgerade}{O{} m m m}{%
+  \mbrdrei#2\relax\let\mbrpa\mbrA\let\mbrpb\mbrB\let\mbrpc\mbrC
+  \mbrdrei#3\relax\let\mbrua\mbrA\let\mbrub\mbrB\let\mbruc\mbrC
+  \ifblank{#1}{%
+    \def\mbrtmin{-1000}\def\mbrtmax{1000}\def\mbrleer{0}%
+    \mbrclip{\mbrpa}{\mbrua}{\ksamin}{\ksamax}%
+    \mbrclip{\mbrpb}{\mbrub}{\ksbmin}{\ksbmax}%
+    \mbrclip{\mbrpc}{\mbruc}{\kscmin}{\kscmax}%
+    \pgfmathparse{\mbrtmax<=\mbrtmin}\ifdim\pgfmathresult pt>0pt \def\mbrleer{1}\fi
+    \ifnum\mbrleer=1
+      \PackageWarning{mathblatt}{rgerade #4: Gerade liegt ausserhalb der Achsbereiche, zeichne t=-1..3}%
+      \def\mbrtmin{-1}\def\mbrtmax{3}\fi
+  }{\mbrzwei#1\relax}%
+  \draw[line width=0.8pt] ({\mbrpa+\mbrtmin*\mbrua},{\mbrpb+\mbrtmin*\mbrub},{\mbrpc+\mbrtmin*\mbruc})
+    -- ({\mbrpa+\mbrtmax*\mbrua},{\mbrpb+\mbrtmax*\mbrub},{\mbrpc+\mbrtmax*\mbruc})
+    node[above right,fill=white,inner sep=1pt,font=\small] {$#4$};}
+% Ebenen: Spurdreieck (Achsenabschnitte) und Parallelogramm (Stützpunkt + Spannvektoren);
+% Label in der Flächenmitte, optionales Argument = Knotenoptionen für das Label.
+\NewDocumentCommand{\rebene}{O{} m m m m}{%
+  \filldraw[fill=mbgrau,fill opacity=0.15,line width=0.6pt] (#2,0,0) -- (0,#3,0) -- (0,0,#4) -- cycle;
+  \node[font=\small,#1] at ({(#2)/3},{(#3)/3},{(#4)/3}) {$#5$};}
+\NewDocumentCommand{\rebenepar}{O{} m m m m}{%
+  \filldraw[fill=mbgrau,fill opacity=0.15,line width=0.6pt]
+    (#2) -- ($(#2)+(#3)$) -- ($(#2)+(#3)+(#4)$) -- ($(#2)+(#4)$) -- cycle;
+  \draw[-{Stealth[length=2mm]},line width=0.8pt] (#2) -- ($(#2)+(#3)$);
+  \draw[-{Stealth[length=2mm]},line width=0.8pt] (#2) -- ($(#2)+(#4)$);
+  \node[font=\small,#1] at ($(#2)+0.5*(#3)+0.5*(#4)$) {$#5$};}
 
 \endinput
