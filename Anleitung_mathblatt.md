@@ -1,7 +1,7 @@
 mathblatt.sty – Anleitung (Stufe 3)
-Gehört zu Vorlagenversion 2026-09-05h. Die Version steht in Zeile 2 der `mathblatt.sty`. Weichen beide ab, gilt die Vorlage: Makros, die sie nicht kennt, benutzt du nicht, und du meldest die Abweichung in einer Zeile im Ausgabeblock.
+Gehört zu Vorlagenversion 2026-09-06a. Die Version steht in Zeile 2 der `mathblatt.sty`. Weichen beide ab, gilt die Vorlage: Makros, die sie nicht kennt, benutzt du nicht, und du meldest die Abweichung in einer Zeile im Ausgabeblock.
  
-Datei `mathblatt.sty` neben die .tex-Datei legen, `\usepackage{mathblatt}` im Kopf. Kompilieren mit `xelatex` (nicht pdflatex): nur so sind Umlaute, ß, € und die Textextraktion sauber, weil im Sandbox keine Type-1-T1-Schriften liegen. Das Modell schreibt nur Inhalt; Ränder, Karogrößen, Fluchten und Fußzeile sind fest.
+Datei `mathblatt.sty` neben die .tex-Datei legen, `\usepackage{mathblatt}` im Kopf. Kompilieren mit `xelatex` (nicht pdflatex): nur so sind Umlaute, ß, € und die Textextraktion sauber, weil im Sandbox keine Type-1-T1-Schriften liegen. Das Modell schreibt nur Inhalt; Ränder, Karogrößen, Fluchten, Kopf- und Fußzeile sind fest.
  
 Schreibweisen: Kompiliert wird mit xelatex, deshalb schreibst du Umlaute, ß, € und deutsche
 Anführungszeichen direkt in den Quelltext. `\ss`, `\euro`, `\"a` und `\glqq` sind weder nötig noch
@@ -15,8 +15,9 @@ Beschriftungen: Alle Label-Argumente der Grafikmakros – `\gerade`, `\parabel`,
 Grundgerüst
  
 ```
-\blattfuss{Lineare Funktionen}{Lernblatt Teil 1 von 3}
-\uebersichtskasten[<Leitgrafik>]{<Formelzeilen> \sternlegende}
+\blattkopf{Lineare Funktionen}{Lernblatt Teil 1 von 3}   → Thema · Bezeichnung oben links, Seite unten rechts
+\blattkopf*{...}{...}                                    → dazu Sternlegende unten links (wenn \steil/\gzs vorkommt)
+\uebersichtskasten[<Leitgrafik>]{<Formelzeilen>}          → optional; \blattfuss = alter Name für \blattkopf
 \begin{aufgabe}{Text} ... \end{aufgabe}            → nummeriert, bleibt auf einer Seite
 \begin{teile} \teil ... \steil ... \end{teile}     → a), ☆b)
 \begin{geruest} \gz{a}{$y=2x+3$}{\feld{m}\feld{n}} \gzs{b}{...}{...} \end{geruest}
@@ -28,7 +29,7 @@ Grundgerüst
 \hilfeseite    \verfahren{Name} \begin{schritte} \schritt ... \achtung{...} \end{schritte}
 ```
  
-Die drei Listenmakros ersetzen den `geruest`-Block bei den häufigsten Aufgabentypen und sparen etwa drei Viertel des Quelltextes. Einträge werden mit Komma getrennt, das Dezimalkomma als `0{,}5` geschrieben, damit es nicht als Trenner gilt. Das optionale Argument ist die Nummer der ersten Sternaufgabe; ohne Angabe gibt es keine Sterne. Der Term steht ohne `y =`, das setzt das Makro. Bei `\punktprobenliste` trennt ein Schrägstrich Term und Punkt. Für Typen ohne passendes Listenmakro bleibt `geruest`.
+In `geruest` wird ein Aufgabentext, der breiter als der Satzspiegel minus 6 cm ist, umbrochen; die Felder bleiben in der Flucht. Die drei Listenmakros ersetzen den `geruest`-Block bei den häufigsten Aufgabentypen und sparen etwa drei Viertel des Quelltextes. Einträge werden mit Komma getrennt, das Dezimalkomma als `0{,}5` geschrieben, damit es nicht als Trenner gilt. Das optionale Argument ist die Nummer der ersten Sternaufgabe; ohne Angabe gibt es keine Sterne. Der Term steht ohne `y =`, das setzt das Makro. Bei `\punktprobenliste` trennt ein Schrägstrich Term und Punkt. Für Typen ohne passendes Listenmakro bleibt `geruest`.
  
 Innerhalb einer Hauptnummer läuft die Buchstabenzählung über alle `teile`-, `teilezwei`-, `geruest`-Blöcke und Listenmakros weiter: Du kannst einen `teile`-Block beenden, Text oder eine Grafik setzen und mit einem neuen `teile`-Block bei d) fortfahren. Erst die nächste `\begin{aufgabe}` beginnt wieder bei a). Das optionale Argument der Listenmakros zählt in dieser Reihenfolge: `[7]` setzt ab dem siebten Buchstaben (g) den Stern, auch wenn die Liste erst bei d) beginnt.
  
@@ -182,7 +183,7 @@ Stochastik
 
 `\baumdrei` hat sieben Listen: erste Stufe, zweite Stufe nach dem ersten und zweiten Ast, dritte Stufe nach den vier Pfaden in der Reihenfolge 1-1, 1-2, 2-1, 2-2. Bei gleichen Wahrscheinlichkeiten auf allen Stufen genügt `\baumdreigleich` mit einer Liste. Zwei Äste je Stufe; der Baum ist rund 8 cm breit und 5,5 cm hoch, zwei nebeneinander passen.
 
-Beim `\kreisdiagramm` bestimmen die Werte nur die Winkel; ob du Prozent oder absolute Zahlen gibst, ist gleich. Was am Sektor stehen soll, schreibst du selbst ins Label, im Textmodus (`Bus 40 \%`). Die Sektoren beginnen oben und laufen im Uhrzeigersinn, in vier wechselnden Grautönen. Die Labels stehen außen; bei vielen kleinen Sektoren nebeneinander überlappen sie, dann `{}` und eine Legende im Text.
+Beim `\kreisdiagramm` bestimmen die Werte nur die Winkel; ob du Prozent oder absolute Zahlen gibst, ist gleich. Was am Sektor stehen soll, schreibst du selbst ins Label, im Textmodus (`Bus 40 \%`). Die Sektoren beginnen oben und laufen im Uhrzeigersinn, in vier wechselnden Grautönen. Die Labels stehen außen; bei vielen kleinen Sektoren nebeneinander überlappen sie, dann `{}` und eine Legende im Text. Sektoren über 50 % sind seit 2026-09-06a möglich.
 
 Die `\vierfeldertafel` nimmt die Merkmale A (Spalten) und B (Zeilen); die Gegenereignisse setzt sie selbst mit Überstrich. Die neun Werte stehen zeilenweise: erst die Zeile B (A, nicht A, Summe), dann nicht B, dann die Summenzeile. Alle neun Kommas müssen stehen, auch wenn Einträge leer bleiben. Werte im Mathemodus, Dezimalkomma als `0{,}2`.
 
