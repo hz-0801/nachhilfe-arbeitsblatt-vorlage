@@ -1,5 +1,5 @@
-mathblatt.sty – Anleitung (Stufe 2)
-Gehört zu Vorlagenversion 2026-09-05c. Die Version steht in Zeile 2 der `mathblatt.sty`. Weichen beide ab, gilt die Vorlage: Makros, die sie nicht kennt, benutzt du nicht, und du meldest die Abweichung in einer Zeile im Ausgabeblock.
+mathblatt.sty – Anleitung (Stufe 3)
+Gehört zu Vorlagenversion 2026-09-05d. Die Version steht in Zeile 2 der `mathblatt.sty`. Weichen beide ab, gilt die Vorlage: Makros, die sie nicht kennt, benutzt du nicht, und du meldest die Abweichung in einer Zeile im Ausgabeblock.
  
 Datei `mathblatt.sty` neben die .tex-Datei legen, `\usepackage{mathblatt}` im Kopf. Kompilieren mit `xelatex` (nicht pdflatex): nur so sind Umlaute, ß, € und die Textextraktion sauber, weil im Sandbox keine Type-1-T1-Schriften liegen. Das Modell schreibt nur Inhalt; Ränder, Karogrößen, Fluchten und Fußzeile sind fest.
  
@@ -8,7 +8,7 @@ Anführungszeichen direkt in den Quelltext. `\ss`, `\euro`, `\"a` und `\glqq` si
 zuverlässig. Bei Zahlen mit Dezimalkomma in Mathematik `$0{,}5$` schreiben, damit der Abstand stimmt. In den Grafikmakros gibst du Koordinaten und Werte dagegen mit Dezimalpunkt an (`2.5`); die Achsenbezifferung setzt die Vorlage selbst mit Komma.
  
 Beschriftungen: Alle Label-Argumente der Grafikmakros – `\gerade`, `\parabel`, `\funktion`, `\punkt`,
-`\steigungsdreieck`, `\dreieck`, `\rpunkt`, `\rvektor`, `\rgerade`, `\rebene`, die Körper – werden vom Makro selbst in Mathematik gesetzt. Du
+`\steigungsdreieck`, `\dreieck`, `\rpunkt`, `\rvektor`, `\rgerade`, `\rebene`, die Körper, die Analysis-Makros – werden vom Makro selbst in Mathematik gesetzt. Du
 übergibst also `g`, `g_1`, `\alpha`, nicht `$g$`. Ausnahme sind die Achsentitel `xlabel`/`ylabel` im
 `ksys`: die stehen im Textmodus, dort schreibst du `t in min` direkt und Mathematik mit Dollarzeichen.
  
@@ -58,7 +58,7 @@ Koordinatensystem 2D
  
 `karo` ist die Kantenlänge einer Gitterzelle in cm, nicht der Maßstab. Den Maßstab je Achse rechnet die Vorlage aus `karo` und `xstep`/`ystep` selbst aus. Für ungleiche Achsen genügen deshalb `xstep` und `ystep`; `karo` bleibt weg und die Zellen bleiben 8 mm. `xstep`/`ystep` steuern Gitter, Bezifferung und Maßstab gemeinsam – ein eigener Feinschritt fürs Gitter ist nicht vorgesehen. Die Achsenzahlen passt die Vorlage selbst an: unter Karo 6 mm werden sie kleiner gesetzt, und wenn die breiteste Zahl nicht in ein Karo passt, steht nur jede zweite (bei Bedarf dritte) Zahl, immer von 0 aus gezählt – bei `xstep=0.5` also die ganzen Zahlen. Das Gitter bleibt dabei vollständig. `[leit]` ergibt ein etwa 4 cm großes System für den Übersichtskasten; weitere Schlüssel dahinter überschreiben es (`[leit,ymax=5]`). Achsenbeschriftungen stehen im Textmodus: `xlabel=t in min` schreibt sich direkt, für Mathematik `xlabel=$x$` (so auch die Voreinstellung).
  
-In `\funktion` und `\funktionab` heißt die Variable `\x` mit Backslash: `\funktion{0.5*\x^2-2}{f}`. Ein `x` ohne Backslash bricht die Kompilierung ab (`Unknown function 'x'`).
+In `\funktion` und `\funktionab` heißt die Variable `\x` mit Backslash: `\funktion{0.5*\x^2-2}{f}`. Ein `x` ohne Backslash bricht die Kompilierung ab (`Unknown function 'x'`). Das Label von `\funktion`, `\funktionab` und `\parabel` sitzt an der ersten Stelle vom rechten Rand aus, an der der Graph in der Zeichenfläche liegt; verlässt der Graph rechts die Fläche, rückt es nach links nach. Liegt der Graph im ganzen Bereich außerhalb, fehlt das Label und das Log meldet `Package mathblatt Warning`. Leeres Label `{}` lässt das Label weg, auch bei `\gerade`.
 
 Bei `\gerade` lässt sich die Stelle des Labels als optionales Argument setzen: `\gerade[1.5]{2}{-1}{g}` beschriftet die Gerade bei $x=1{,}5$. Liegen mehrere Geraden in einem System, ziehst du die Labels damit auseinander, statt die Aufgabenwerte zu ändern. Fällt die gewählte Stelle aus der Zeichenfläche, rückt das Label automatisch an den Rand.
  
@@ -159,6 +159,30 @@ Beim `\histogramm` schreibst du jede Klasse als `von:bis/Höhe`, durch Komma get
 
 `karo`, `xstep` und `ystep` wirken bei beiden wie beim `ksys`: `karo` ist die Kantenlänge einer Gitterzelle (0,5 cm), `xstep`/`ystep` der Wert je Zelle. `xlabel` und `ylabel` stehen im Textmodus. Die Achsenzahlen werden wie beim `ksys` automatisch verkleinert und ausgedünnt.
  
-Noch nicht in Stufe 1
+Analysis (im ksys, `\ableitungspaar` freistehend)
+
+```
+\ableitungspaar[xmin=-3,xmax=3,ymin=-2,ymax=4,ymin2=-4,ymax2=4,ablesen]{0.5*\x^2-1}{f}{\x}{f'}
+\ableitungspaar[...]{\x^3-3*\x}{f}{}{f'}         unteres System leer: Schüler zeichnet f'
+\flaeche{\x^2-4*\x+3}{1}{3}{A}                   Fläche zwischen Graph und x-Achse von 1 bis 3
+\flaechezwischen{-\x^2+2*\x+3}{\x+1}{-1}{2}{A}   Fläche zwischen zwei Graphen
+\tangentean{0.5*\x^2}{1}{t}                      Tangente in x0 = 1 mit Steigungsdreieck
+\tangentean*{0.5*\x^2}{1}{t}                     ohne Steigungsdreieck
+\tangentean[\frac{3}{2}]{0.5*\x^2}{1.5}{t}       Steigungstext selbst gesetzt
+\hochpunkt{-1}{2}{H}   \tiefpunkt{1}{-2}{T}   \wendepunkt{0}{0}{W}   \wendepunkt[-3]{0}{0}{W}
+\asymptote{x=2}{}   \asymptote{y=1}{y=1}   \asymptote{y=0.5*\x}{a}
+```
+
+`\ableitungspaar` setzt zwei Systeme mit gleicher x-Achse untereinander, oben f, unten f′, Ursprünge bündig. Die Schlüssel gelten für beide; `ymin2`, `ymax2`, `ystep2`, `ylabel2` überschreiben den y-Bereich des unteren Systems. Ein leerer Term lässt das jeweilige System leer. Beide Terme gibst du selbst an – die Vorlage leitet nicht ab. Das Paar ist etwa doppelt so hoch wie ein einzelnes System; mit `ablesen` bleibt Platz für Text daneben.
+
+`\flaeche` färbt die Fläche zwischen Graph und x-Achse grau, `\flaechezwischen` die zwischen zwei Graphen; Flächen unterhalb der Achse und mit Vorzeichenwechsel werden genauso gefärbt, ohne Unterscheidung. Das Label steht in der Mitte der Fläche (bei schmalen Flächen ragt es heraus, dann `{}` und Text daneben). Die Graphen selbst zeichnest du mit `\funktion` oder `\gerade` dazu – die Fläche hat nur einen dünnen Rand.
+
+`\tangentean` bestimmt die Steigung numerisch aus dem Term, zeichnet die Tangente wie `\gerade` (Label am Rand), markiert den Berührpunkt und legt ein Steigungsdreieck an: 1 nach rechts, m senkrecht, Steigungstext mit zwei Nachkommastellen (1,5; −2; 0,33). Für exakte Werte (Brüche, Wurzeln) gibst du den Text im optionalen Argument vor. Liegt x0 nahe am rechten Rand, kippt das Dreieck nach links. Das Dreieck ist an 1 Einheit gebunden: bei `xstep` größer 1 wird es sehr klein, dann `\tangentean*`.
+
+`\hochpunkt` und `\tiefpunkt` setzen Punkt und Label über bzw. unter dem Punkt, `\wendepunkt` rechts oben; mit optionaler Steigung `[m]` zeichnet `\wendepunkt` ein kurzes gestricheltes Stück der Wendetangente, `[0]` für den Sattelpunkt. Die Koordinaten gibst du an – die Vorlage rechnet keine Extremstellen.
+
+`\asymptote` nimmt `x=Wert` (senkrecht) oder `y=Term` (waagerecht oder schräg, Term in `\x`) und zeichnet gestrichelt über die ganze Zeichenfläche. Der Graph selbst wird bei einer Polstelle in zwei Stücken mit `\funktionab` gezeichnet, links und rechts der Lücke; das zweite Stück bekommt ein leeres Label.
+
+Noch nicht in Stufe 3
  
-Netze, Zweitafelprojektion, dreistufiger Baum, Kreisdiagramm, Analysis-Darstellungen (Ableitung, Integralfläche), Kreis mit Umfangs- und Mittelpunktswinkel; im 3D-System Spurgeraden, Ebenen ohne Achsenabschnitte, Kegel/Kugel/Zylinder – Bausteinliste Stufe 3.
+Netze, Zweitafelprojektion, dreistufiger Baum, Kreisdiagramm, Vierfeldertafel, Binomial- und Normalverteilung, Kreis mit Umfangs- und Mittelpunktswinkel, Einheitskreis, Zahlenstrahl; im 3D-System Spurgeraden, Ebenen ohne Achsenabschnitte, Kegel/Kugel/Zylinder – Bausteinliste Stufe 3.

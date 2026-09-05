@@ -1,7 +1,8 @@
-% mathblatt.sty – Vorlage für Nachhilfe-Arbeitsblätter, Stufe 2 (Sek I und Oberstufe)
-% Version 2026-09-05c (Block 1: ksys-leit, Achsenzahlen ausgeduennt, teil-Zaehler je Hauptnummer,
-%                      Prisma-h, Zylinder-r, rebenepar*; Block 2: pyramide, kegel, kugel, rquader,
-%                      rpyramide; Block 3: boxplots, histogramm; Block 4: kreis, Winkelfiguren; Dezimalkomma)
+% mathblatt.sty – Vorlage für Nachhilfe-Arbeitsblätter, Stufe 3 (Sek I und Oberstufe)
+% Version 2026-09-05d (Stufe 2: ksys-leit, Achsenzahlen, teil-Zaehler, Koerper, rquader/rpyramide,
+%                      boxplots, histogramm, kreis, Winkelfiguren, Dezimalkomma;
+%                      Block 5 Analysis: ableitungspaar, flaeche, flaechezwischen, tangentean,
+%                      hochpunkt/tiefpunkt/wendepunkt, asymptote; Kurvenlabel neu positioniert)
 %
 % Verwendung:  \usepackage{mathblatt}   (Datei neben der .tex-Datei)
 % Kompilieren mit  xelatex  (saubere Schrift, Umlaute, €, Textextraktion);
@@ -10,7 +11,7 @@
 % Inhalt; Layout, Grafikgrößen und Ausrichtung sind hier festgelegt.
 %
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{mathblatt}[2026/09/05 Nachhilfe-Arbeitsblatt 2026-09-05c]
+\ProvidesPackage{mathblatt}[2026/09/05 Nachhilfe-Arbeitsblatt 2026-09-05d]
 
 \RequirePackage[a4paper,margin=18mm,top=16mm,bottom=18mm]{geometry}
 \RequirePackage{iftex}
@@ -235,8 +236,11 @@
   ablesen/.style={karo=0.6}, klein/.style={karo=0.35},
   leit/.style={karo=0.6,xmin=-3,xmax=3,ymin=-3,ymax=3},
   default/.style={xmin=-4,xmax=4,ymin=-4,ymax=4,xstep=1,ystep=1,karo=0.8,xlabel=$x$,ylabel=$y$}}
-\newenvironment{ksys}[1][]{%
-  \pgfkeys{/ksys,default,#1}%
+% Kern des ksys in drei Hilfsmakros, damit \ableitungspaar zwei Systeme in ein Bild setzen kann:
+% \mbksyssetup{Schlüssel} liest Schlüssel und rechnet Maßstäbe, \mbksysachsen zeichnet Gitter,
+% Achsen und Bezifferung, \mbksysclip öffnet den Clip-Bereich (Scope wird vom Aufrufer geschlossen).
+\newcommand{\mbksyssetup}[1]{\pgfkeys{/ksys,default,#1}\mbksysrechnen}
+\newcommand{\mbksysrechnen}{%
   \pgfmathsetmacro{\ksxk}{\kskaro/\ksxstep}%
   \pgfmathsetmacro{\ksyk}{\kskaro/\ksystep}%
   \pgfmathsetmacro{\kstx}{0.12*\ksxstep}%
@@ -250,8 +254,8 @@
     \ifdim\wd\mbmessbox>\mbwmax\xdef\mbwmax{\the\wd\mbmessbox}\fi}%
   \edef\mbhh{\the\dimexpr\ht\mbmessbox+\dp\mbmessbox\relax}%
   \pgfmathtruncatemacro{\ksxl}{max(1,ceil((\mbwmax+2pt)/(\kskaro cm)))}%
-  \pgfmathtruncatemacro{\ksyl}{max(1,ceil((\mbhh+2pt)/(\kskaro cm)))}%
-  \begin{tikzpicture}[x=\ksxk cm,y=\ksyk cm,baseline=(current bounding box.north)]
+  \pgfmathtruncatemacro{\ksyl}{max(1,ceil((\mbhh+2pt)/(\kskaro cm)))}}
+\newcommand{\mbksysachsen}{%
     \draw[mbgitter,line width=0.3pt] (\ksxmin,\ksymin) grid[xstep=\ksxstep,ystep=\ksystep] (\ksxmax,\ksymax);
     \draw[-{Stealth[length=2mm]},line width=0.6pt] (\ksxmin,0) -- (\ksxpfeil,0) node[right] {\small\ksxlabel};
     \draw[-{Stealth[length=2mm]},line width=0.6pt] (0,\ksymin) -- (0,\ksypfeil) node[above] {\small\ksylabel};
@@ -262,9 +266,13 @@
     \foreach \y in {\ksymin,\ksya,...,\ksymax}{\ifdim \y pt=0pt\else
       \pgfmathtruncatemacro{\mbrest}{mod(abs(round(\y/\ksystep)),\ksyl)}%
       \draw (\kstx,\y) -- (-\kstx,\y)
-        \ifnum\mbrest=0 node[left,inner sep=1.5pt] {\mbtf$\pgfmathprintnumber{\y}$}\fi;\fi}
-    \begin{scope}
-    \clip (\ksxmin,\ksymin) rectangle (\ksxmax,\ksymax);
+        \ifnum\mbrest=0 node[left,inner sep=1.5pt] {\mbtf$\pgfmathprintnumber{\y}$}\fi;\fi}}
+\newcommand{\mbksysclip}{\begin{scope}\clip (\ksxmin,\ksymin) rectangle (\ksxmax,\ksymax);}
+\newenvironment{ksys}[1][]{%
+  \mbksyssetup{#1}%
+  \begin{tikzpicture}[x=\ksxk cm,y=\ksyk cm,baseline=(current bounding box.north)]
+  \mbksysachsen
+  \mbksysclip
 }{\end{scope}\end{tikzpicture}}
 % Objekte im ksys
 \newcommand{\gerade}{}
@@ -287,22 +295,38 @@
       \pgfmathsetmacro{\mblx}{(\mbly-#3)/(#2+0.000001)}%
     \fi}%
   \draw[line width=0.8pt,domain=\ksxmin:\ksxmax,samples=2] plot (\x,{#2*\x+#3});
-  \node[fill=white,inner sep=1pt,font=\small] at (\mblx,\mbly) {$#4$};}
+  \ifblank{#4}{}{\node[fill=white,inner sep=1pt,font=\small] at (\mblx,\mbly) {$#4$};}}
 \newcommand{\punkt}[3]{\fill (#1,#2) circle (1.6pt) node[above right,font=\small] {$#3$};}
 \newcommand{\steigungsdreieck}[3]{%
   \draw[mbgrau,dashed] (#1,#2) -- ({#1+1},#2) -- ({#1+1},{#2+#3});
   \node[below,font=\scriptsize,mbgrau] at ({#1+0.5},#2) {1};
   \node[right,font=\scriptsize,mbgrau] at ({#1+1},{#2+#3/2}) {$#3$};}
 \newcommand{\parabel}[4]{%
-  \draw[line width=0.8pt,domain=\ksxmin:\ksxmax,samples=80,smooth] plot (\x,{#1*(\x-#2)^2+#3})
-    node[pos=0.97,fill=white,inner sep=1pt,font=\small] {$#4$};
+  \draw[line width=0.8pt,domain=\ksxmin:\ksxmax,samples=80,smooth] plot (\x,{#1*(\x-#2)^2+#3});
+  \mbfunklabel{(#1)*(\x-(#2))^2+(#3)}{#4}{\ksxmin}{\ksxmax}%
   \fill (#2,#3) circle (1.4pt);}
+% Kurvenlabel: pos= auf plot-Pfaden ist unzuverlässig, deshalb sucht \mbfunklabel vom rechten
+% Rand aus die erste Stelle, an der der Graph innerhalb der Zeichenfläche liegt (40 Schritte).
+\newcommand{\mbfunklabel}[4]{% Term, Label, von, bis
+  \ifblank{#2}{}{%
+    \pgfmathsetmacro{\mbfx}{#4}\pgfmathsetmacro{\mbfd}{((#4)-(#3))/40}%
+    \def\mbfn{0}\def\mbfok{0}%
+    \loop
+      \begingroup\edef\x{(\mbfx)}\pgfmathparse{#1}\global\let\mbfy\pgfmathresult\endgroup
+      \pgfmathtruncatemacro{\mbfok}{(\mbfy<\ksymax-0.3*\ksystep)&&(\mbfy>\ksymin+0.3*\ksystep)}%
+      \pgfmathtruncatemacro{\mbfn}{\mbfn+1}%
+      \ifnum\mbfok=0 \pgfmathsetmacro{\mbfx}{\mbfx-\mbfd}\fi
+      \pgfmathtruncatemacro{\mbfgo}{(\mbfok==0)&&(\mbfn<40)}%
+    \ifnum\mbfgo=1 \repeat
+    \ifnum\mbfok=1
+      \node[fill=white,inner sep=1pt,font=\small] at (\mbfx,\mbfy) {$#2$};
+    \else\PackageWarning{mathblatt}{Label #2: Graph liegt im Bereich nicht in der Zeichenflaeche}\fi}}
 \newcommand{\funktion}[2]{%
-  \draw[line width=0.8pt,domain=\ksxmin:\ksxmax,samples=120,smooth] plot (\x,{#1})
-    node[pos=0.97,fill=white,inner sep=1pt,font=\small] {$#2$};}
+  \draw[line width=0.8pt,domain=\ksxmin:\ksxmax,samples=120,smooth] plot (\x,{#1});
+  \mbfunklabel{#1}{#2}{\ksxmin}{\ksxmax}}
 \newcommand{\funktionab}[4]{% Term, Label, von, bis  (bei Definitionslücken)
-  \draw[line width=0.8pt,domain=#3:#4,samples=120,smooth] plot (\x,{#1})
-    node[pos=0.97,fill=white,inner sep=1pt,font=\small] {$#2$};}
+  \draw[line width=0.8pt,domain=#3:#4,samples=120,smooth] plot (\x,{#1});
+  \mbfunklabel{#1}{#2}{#3}{#4}}
 % Zwei Systeme nebeneinander: \ksysabstand dazwischen
 \newcommand{\ksysabstand}{\hspace{1.0cm}}
 
@@ -844,5 +868,111 @@
   \mbrdrei#1\relax\let\mbpx\mbrA\let\mbpy\mbrB\let\mbpz\mbrC
   \mbpyramideecken{#2}{#3}{#4}%
   \mbpyramidekanten}
+
+% ---------------------------------------------------------------------------
+% L  Analysis (Objekte im ksys, sofern nicht anders vermerkt)
+% ---------------------------------------------------------------------------
+% \ableitungspaar[ksys-Schlüssel]{Term f}{f}{Term f'}{f'}   freistehend, zwei Systeme untereinander
+%   mit gleicher x-Achse; Schlüssel wie beim ksys, dazu ymin2/ymax2/ystep2/ylabel2 für das
+%   untere System. Leerer Term = leeres System (Schüler zeichnet).
+%   \ableitungspaar[xmin=-3,xmax=3,ymin=-2,ymax=6,ymin2=-4,ymax2=4]{0.5*\x^2-2}{f}{\x}{f'}
+% \flaeche{Term}{a}{b}{A}                 Fläche zwischen Graph und x-Achse von a bis b, grau
+% \flaechezwischen{Term f}{Term g}{a}{b}{A}   Fläche zwischen zwei Graphen
+% \tangentean{Term}{x0}{t}                Tangente in x0 mit Steigungsdreieck (1 nach rechts, m senkrecht);
+%   \tangentean*{Term}{x0}{t}             ohne Steigungsdreieck; \tangentean[1{,}5]{...} setzt den
+%                                          Steigungstext selbst (sonst numerisch, 2 Nachkommastellen)
+% \hochpunkt{x}{y}{H}  \tiefpunkt{x}{y}{T}  \wendepunkt{x}{y}{W}  \wendepunkt[m]{x}{y}{W}
+%   Punkt mit Label über, unter bzw. rechts über dem Punkt; Wendepunkt mit optionaler Steigung m
+%   der Wendetangente (kurzes gestricheltes Stück), \wendepunkt[0] für den Sattelpunkt.
+% \asymptote{x=2}{}   \asymptote{y=-1}{}   \asymptote{y=0.5*\x+1}{a}   gestrichelt, Label optional
+\pgfkeys{/ksys,
+  ymin2/.estore in=\ksyminu, ymax2/.estore in=\ksymaxu,
+  ystep2/.estore in=\ksystepu, ylabel2/.estore in=\ksylabelu}
+\NewDocumentCommand{\ableitungspaar}{O{} m m m m}{%
+  \def\ksyminu{}\def\ksymaxu{}\def\ksystepu{}\def\ksylabelu{}%
+  \mbksyssetup{#1}%
+  \begin{tikzpicture}[x=\ksxk cm,y=\ksyk cm,baseline=(current bounding box.north)]
+    \mbksysachsen
+    \mbksysclip
+      \ifblank{#2}{}{\funktion{#2}{#3}}
+    \end{scope}
+    \pgfmathsetmacro{\mbyu}{\ksymin*\ksyk}% untere Kante des oberen Systems in cm
+    \pgfkeys{/ksys,default,#1}%
+    \ifx\ksyminu\empty\else\pgfkeys{/ksys,ymin=\ksyminu}\fi
+    \ifx\ksymaxu\empty\else\pgfkeys{/ksys,ymax=\ksymaxu}\fi
+    \ifx\ksystepu\empty\else\pgfkeys{/ksys,ystep=\ksystepu}\fi
+    \ifx\ksylabelu\empty\else\pgfkeys{/ksys,ylabel=\ksylabelu}\fi
+    \mbksysrechnen
+    \pgfmathsetmacro{\mbys}{\mbyu-1.3-\ksypfeil*\ksyk}%
+    \begin{scope}[y=\ksyk cm,yshift=\mbys cm]
+      \mbksysachsen
+      \mbksysclip
+        \ifblank{#4}{}{\funktion{#4}{#5}}
+      \end{scope}
+    \end{scope}
+  \end{tikzpicture}}
+% Flächen: Rand des Graphen durchgezogen, Begrenzungen bei a und b dünn; Label in der Mitte.
+\NewDocumentCommand{\flaeche}{m m m m}{%
+  \fill[mbgrau,fill opacity=0.3] plot[domain=#2:#3,samples=80,smooth] (\x,{#1}) -- (#3,0) -- (#2,0) -- cycle;
+  \draw[line width=0.4pt] plot[domain=#2:#3,samples=80,smooth] (\x,{#1}) -- (#3,0) -- (#2,0) -- cycle;
+  \ifblank{#4}{}{%
+    \begingroup\def\x{(((#2)+(#3))/2)}\pgfmathparse{#1}\global\let\mbfm\pgfmathresult\endgroup
+    \node[font=\small] at ({((#2)+(#3))/2},{\mbfm/2}) {$#4$};}}
+\NewDocumentCommand{\flaechezwischen}{m m m m m}{%
+  \fill[mbgrau,fill opacity=0.3] plot[domain=#3:#4,samples=80,smooth] (\x,{#1})
+    -- plot[domain=#4:#3,samples=80,smooth] (\x,{#2}) -- cycle;
+  \draw[line width=0.4pt] plot[domain=#3:#4,samples=80,smooth] (\x,{#1})
+    -- plot[domain=#4:#3,samples=80,smooth] (\x,{#2}) -- cycle;
+  \ifblank{#5}{}{%
+    \begingroup\def\x{(((#3)+(#4))/2)}\pgfmathparse{#1}\global\let\mbfm\pgfmathresult
+      \pgfmathparse{#2}\global\let\mbgm\pgfmathresult\endgroup
+    \node[font=\small] at ({((#3)+(#4))/2},{(\mbfm+\mbgm)/2}) {$#5$};}}
+% Tangente: Steigung numerisch (zentraler Differenzenquotient, h = 0.01), Gerade über \gerade,
+% Label am Rand wie bei \gerade ohne optionales Argument.
+\NewDocumentCommand{\tangentean}{s O{} m m m}{%
+  \begingroup
+    \def\x{((#4)+0.01)}\pgfmathparse{#3}\global\let\mbfp\pgfmathresult
+    \def\x{((#4)-0.01)}\pgfmathparse{#3}\global\let\mbfq\pgfmathresult
+    \def\x{(#4)}\pgfmathparse{#3}\global\let\mbfz\pgfmathresult
+  \endgroup
+  \pgfmathsetmacro{\mbm}{(\mbfp-\mbfq)/0.02}%
+  \pgfmathsetmacro{\mbn}{\mbfz-\mbm*(#4)}%
+  \gerade{\mbm}{\mbn}{#5}%
+  \IfBooleanF{#1}{%
+    \pgfmathsetmacro{\mbdx}{ifthenelse((#4)+1.3*\ksxstep>\ksxmax,-1,1)}%
+    \pgfmathsetmacro{\mbxv}{(#4)+\mbdx}% senkrechte Seite des Dreiecks
+    \draw[mbgrau,dashed] (#4,\mbfz) -- (\mbxv,\mbfz) -- (\mbxv,{\mbfz+\mbdx*\mbm});
+    \node[below,font=\scriptsize,mbgrau] at ({(#4)+\mbdx/2},\mbfz) {1};
+    % Steigungstext außen neben der senkrechten Seite; innen, wenn außen die y-Achse
+    % oder der Rand im Weg ist
+    \pgfmathtruncatemacro{\mbinnen}{(\mbdx>0 && ((\mbxv>-1.2*\ksxstep && \mbxv<0.2*\ksxstep) || \mbxv+\ksxstep>\ksxmax))
+      || (\mbdx<0 && ((\mbxv<0.2*\ksxstep && \mbxv>-0.2*\ksxstep) || \mbxv-\ksxstep<\ksxmin))}%
+    \ifnum\mbinnen=1
+      \ifdim\mbdx pt>0pt \def\mbanch{left}\else\def\mbanch{right}\fi
+    \else
+      \ifdim\mbdx pt>0pt \def\mbanch{right}\else\def\mbanch{left}\fi
+    \fi
+    \node[\mbanch,font=\scriptsize,mbgrau] at (\mbxv,{\mbfz+\mbdx*\mbm/2})
+      {\ifblank{#2}{$\pgfmathprintnumber[precision=2]{\mbm}$}{$#2$}};}
+  \fill (#4,\mbfz) circle (1.6pt);}
+% Markierte Punkte
+\newcommand{\hochpunkt}[3]{\fill (#1,#2) circle (1.6pt); \ifblank{#3}{}{\node[above,font=\small,inner sep=3pt] at (#1,#2) {$#3$};}}
+\newcommand{\tiefpunkt}[3]{\fill (#1,#2) circle (1.6pt); \ifblank{#3}{}{\node[below,font=\small,inner sep=3pt] at (#1,#2) {$#3$};}}
+\NewDocumentCommand{\wendepunkt}{o m m m}{%
+  \IfNoValueF{#1}{\draw[mbgrau,dashed] ({(#2)-0.6*\ksxstep},{(#3)-0.6*\ksxstep*(#1)}) -- ({(#2)+0.6*\ksxstep},{(#3)+0.6*\ksxstep*(#1)});}%
+  \fill (#2,#3) circle (1.6pt);
+  \ifblank{#4}{}{\node[above right,font=\small,inner sep=2pt] at (#2,#3) {$#4$};}}
+% Asymptote: Argument  x=Wert  (senkrecht) oder  y=Term  (waagerecht/schräg, Term in \x)
+\def\mbasparse#1=#2\relax{\def\mbasl{#1}\def\mbasr{#2}}
+\NewDocumentCommand{\asymptote}{m m}{%
+  \mbasparse#1\relax
+  \if x\mbasl
+    \draw[dashed,line width=0.5pt] (\mbasr,\ksymin) -- (\mbasr,\ksymax);
+    \ifblank{#2}{}{\node[right,font=\small,fill=white,inner sep=1pt] at (\mbasr,{\ksymax-0.7*\ksystep}) {$#2$};}%
+  \else
+    \draw[dashed,line width=0.5pt,domain=\ksxmin:\ksxmax,samples=40] plot (\x,{\mbasr});
+    \pgfmathsetmacro{\mbasx}{\ksxmax-0.15*(\ksxmax-\ksxmin)}%
+    \mbfunklabel{\mbasr}{#2}{\ksxmin}{\mbasx}%
+  \fi}
 
 \endinput
