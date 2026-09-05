@@ -1,5 +1,5 @@
 mathblatt.sty – Anleitung (Stufe 3)
-Gehört zu Vorlagenversion 2026-09-05e. Die Version steht in Zeile 2 der `mathblatt.sty`. Weichen beide ab, gilt die Vorlage: Makros, die sie nicht kennt, benutzt du nicht, und du meldest die Abweichung in einer Zeile im Ausgabeblock.
+Gehört zu Vorlagenversion 2026-09-05g. Die Version steht in Zeile 2 der `mathblatt.sty`. Weichen beide ab, gilt die Vorlage: Makros, die sie nicht kennt, benutzt du nicht, und du meldest die Abweichung in einer Zeile im Ausgabeblock.
  
 Datei `mathblatt.sty` neben die .tex-Datei legen, `\usepackage{mathblatt}` im Kopf. Kompilieren mit `xelatex` (nicht pdflatex): nur so sind Umlaute, ß, € und die Textextraktion sauber, weil im Sandbox keine Type-1-T1-Schriften liegen. Das Modell schreibt nur Inhalt; Ränder, Karogrößen, Fluchten und Fußzeile sind fest.
  
@@ -124,9 +124,31 @@ Kreis und Winkelfiguren
 \winkel{40}{\alpha}   \winkel[4]{40}{\alpha}           einzelner Winkel, Schenkellänge in cm
 ```
 
+Winkel am Kreis (in der `kreis`-Umgebung): `\mittelpunktswinkel{200}{340}{\mu}` zeichnet die Schenkel von M zu den Randpunkten bei 200° und 340° mit Bogen an M; `\umfangswinkel{200}{340}{100}{\gamma}` die Sehnen vom Punkt bei 100° zu den beiden Randpunkten mit Bogen am Scheitel. Liegen die beiden Randpunkte einander gegenüber (Differenz 180°), setzt `\umfangswinkel` statt des Bogens die Rechtwinkelmarke – der Satz des Thales, den Durchmesser dazu mit `\durchmesser`. Die Punkte A, B, C beschriftest du mit `\kreispunkt`; das Makro zeichnet nur Linien, Bogen und den Scheitelpunkt. Immer wird der kleinere der beiden Winkel markiert. Das Label von `\mittelpunkt` und der Bogen des Mittelpunktswinkels liegen dicht beieinander; bei Bedarf `\mittelpunkt{}`.
+
 Alle Winkel stehen in Grad und werden gegen den Uhrzeigersinn ab der Waagerechten gezählt: `\radius{40}{r}` zeigt nach rechts oben, `\radius{270}{r}` nach unten. Ein Sektor läuft vom ersten zum zweiten Winkel, ebenfalls gegen den Uhrzeigersinn. Der Kreis selbst hat kein Gitter; die Umgebung nimmt genau einen Kreis auf, mehrere Kreise setzt du nebeneinander mit `\hspace`.
 
 Bei `\geradenkreuzung` liegt $\alpha$ rechts oben, $\beta$ links oben, $\gamma$ links unten (Scheitelwinkel zu $\alpha$), $\delta$ rechts unten. Bei `\parallelenpaar` gehören $\alpha$ und $\beta$ zur oberen Kreuzung, $\gamma$ und $\delta$ zur unteren, jeweils rechts oben und links oben; $\alpha$ und $\gamma$ sind damit Stufenwinkel, $\beta$ und $\delta$ ebenso. Die Parallelen werden so lang gezeichnet, dass beide Schnittpunkte darauf liegen, auch bei flachen Winkeln.
+
+Vierecke, Netze, Strahlensatz (Maße in cm)
+
+```
+\viereck[seiten={a,b,c,d},diagonalen,hoehe,winkel]{(0,0)}{(5,0)}{(6,3)}{(1.5,3.5)}   Ecken A, B, C, D gegen den Uhrzeigersinn
+\parallelogramm[seiten={a,b,a,b},hoehe,winkel={\alpha,\beta,,}]{4}{2.5}{60}       a, b, Winkel alpha
+\rechteck[achsen=beide]{4}{2.5}       \trapez[hoehe=h]{5}{3}{2.5}   a unten, c oben (mittig), h
+\raute[achsen=diagonalen,diagonalen]{4}{2.5}   Diagonalen e (waagerecht), f
+\drachen[achsen=senkrecht,diagonalen]{4}{3}{0.35}   e senkrecht, f quer, t = Anteil von e bis zur Querdiagonale
+\netzquader{3}{1.5}{2}{a}{b}{c}   \netzwuerfel{1.5}{a}   \netzpyramide{2.5}{2}{a}{h_s}   \netzzylinder{1}{2.5}{r}{h}
+\strahlensatz[strecken={2,3,,5}]{2}{5}{35}          V-Figur: ZA, ZA', Winkel zwischen den Strahlen
+\strahlensatz[x,strecken={2,4,a,b}]{2}{4}{30}       X-Figur
+\strahlensatz[punkte={Z,A,B,C,D},faktor=1.5]{2}{4}{90}
+```
+
+`\viereck` nimmt vier Ecken als Koordinaten wie `\dreieck`; alle Zusätze sind Schlüssel: `punkte={A,B,C,D}` ist voreingestellt (`punkte=` lässt sie weg), `seiten={a,b,c,d}` beschriftet AB, BC, CD, DA, `diagonalen` zeichnet beide gestrichelt mit e (AC) und f (BD) – andere Labels als `diagonalen={e,}` –, `hoehe` fällt das Lot von D auf AB mit Rechtwinkelmarke und Label h (`hoehe=h_a` für ein anderes), `winkel` setzt Bögen mit α bis δ (`winkel={\alpha,,,\delta}` für eine Auswahl, immer der kleinere Winkel), `achsen=senkrecht|waagerecht|beide|diagonalen|alle` zeichnet Symmetrieachsen strichpunktiert durch die Figurenmitte bzw. durch die Diagonalen. Die Achsen werden nicht geprüft – bei einem allgemeinen Viereck zeichnet `achsen=beide` trotzdem zwei Linien. Die fünf Sonderformen sind nur Abkürzungen für Koordinaten und nehmen dieselben Schlüssel; beim Trapez liegt c mittig über a (gleichschenklig), beim Drachen liegt A unten und C oben auf der Symmetrieachse.
+
+Netze: Umriss dick, Faltkanten dünn. `\netzquader` legt das Kreuz mit der Vorderfläche a × c in der Mitte, links und rechts b × c, oben und unten a × b, die Rückfläche rechts außen; Labels an der unteren Klappe (a), an der linken Fläche (b, c). Die Pyramide ist quadratisch mit Seitenhöhe h_s, gestrichelt im unteren Dreieck. Der Zylinder zeigt das Mantelrechteck 2πr × h mit den beiden Deckkreisen oben links und unten links und dem Hinweis u = 2πr unter dem Rechteck. Ein Quadernetz mit a = 3 ist rund 9 cm breit; zwei Netze passen nebeneinander, wenn die Kanten klein bleiben.
+
+`\strahlensatz` zeichnet zwei Strahlen von Z mit den Parallelen durch A und A′ (Abstände ZA und ZA′ auf dem ersten Strahl, Winkel dazwischen); B und B′ liegen auf dem zweiten Strahl mit ZB = faktor · ZA (Voreinstellung 1,3). `[x]` legt A und A′ auf verschiedene Seiten von Z (X-Figur). `strecken` beschriftet in der V-Figur ZA, AA′, AB, A′B′, in der X-Figur ZA, ZA′, AB, A′B′ – leere Einträge bleiben frei; Zahlen wie `2` oder `3{,}5` gehen direkt, es sind Mathelabels. `punkte` ersetzt die fünf Punktnamen in der Reihenfolge Z, A, B, A′, B′.
 
 Leere Beschriftung `{}` lässt das Label weg – in allen Makros dieses Abschnitts und bei den Körpern. Beim Prisma ist `h` die Höhe des Grunddreiecks; sie wird als gestrichelte Linie mit Rechtwinkelmarke in der Vorderfläche gezeichnet, das Label steht rechts daneben. Beim Zylinder liegt `r` auf der gestrichelten Radiuslinie in der Deckfläche. Pyramide und Kegel zeigen die Höhe gestrichelt mit Fußpunkt und Rechtwinkelmarke, das Label `h` steht links davon; beim Kegel liegt `r` auf der Radiuslinie der Grundfläche, `s` an der rechten Mantellinie. Bei der Pyramide werden verdeckte Kanten aus den Maßen bestimmt – bei flachen Pyramiden ist die linke Seitenfläche sichtbar, dann ist die hintere linke Kante durchgezogen; das ist richtig. Die Körper sind in Kavalierprojektion mit der Tiefe nach rechts oben gezeichnet – das ist eine andere Blickrichtung als beim räumlichen Koordinatensystem, deshalb gehören Körper und 3D-System nicht nebeneinander auf ein Blatt.
  
@@ -211,6 +233,43 @@ Analysis (im ksys, `\ableitungspaar` freistehend)
 
 `\asymptote` nimmt `x=Wert` (senkrecht) oder `y=Term` (waagerecht oder schräg, Term in `\x`) und zeichnet gestrichelt über die ganze Zeichenfläche. Der Graph selbst wird bei einer Polstelle in zwei Stücken mit `\funktionab` gezeichnet, links und rechts der Lücke; das zweite Stück bekommt ein leeres Label.
 
+Zahlen und Algebra
+
+```
+\zahlenstrahl{-3/A, 1.5/B, 4/}                                  Punkte mit Label (leer = nur Markierung)
+\zahlenstrahl[xmin=0,xmax=2,xstep=0.25,karo=0.7]{0.5/\frac12}   karo = cm je Schritt
+\zahlenstrahl{}                                                 nur die Gerade
+\begin{zahlengerade}[xmin=-4,xmax=6]
+  \intervall{-2}{3}{[-2;3]}        geschlossen (volle Enden)
+  \intervallo[2]{1}{5}{]1;5[}      offen (leere Enden); [2] = zweite Zeile, wenn sich Intervalle überschneiden
+  \intervall*[3]{-3}{0}{}          links offen, rechts geschlossen;  \intervallo*  links geschlossen, rechts offen
+  \intervallo*[4]{2}{}{x \ge 2}    Grenze leer = Pfeil ins Unendliche
+\end{zahlengerade}
+\bruchkreis{3}{8}   \bruchkreis[0.8]{1}{3}   \bruchkreis{0}{6}      Teile gefüllt/gesamt; [r] Radius in cm
+\bruchrechteck{3}{8}   \bruchrechteck[3]{2}{5}                      [Breite] in cm, Höhe 1 cm
+\termbaum{+}{3x}{\tb{\cdot}{2}{y}}           Kinder sind Text (Blatt) oder \tb{Knoten}{Kind}{Kind}
+\termbaum{}{\tb{}{5}{x}}{\tb{}{}{}}          leere Knoten = Felder zum Eintragen
+```
+
+Der Zahlenstrahl setzt die Zahlen mit Komma und dünnt sie wie das `ksys` aus, wenn sie nicht in einen Schritt passen. Punkte und Labels stehen oben, Labels im Mathemodus. `zahlengerade` ist die Umgebung dahinter: darin liegen die Intervalle als dicke Striche über der Achse, Zeile 1 direkt darüber, weitere Zeilen mit dem optionalen Argument. Ungleichungen (`x < -1`, `x \ge 2`) sind Intervalle mit leerer Grenze. Die Grenzen selbst schreibst du mit Dezimalpunkt.
+
+Im `\termbaum` stehen alle Knoten im Mathemodus (`\cdot`, `\frac{d}{2}`, `x^2`); die Tiefe ist frei, ab vier Ebenen werden die Blätter eng. Der Baum ist nur binär.
+
+Trigonometrie
+
+```
+\einheitskreis{50}                Einheitskreis mit Punkt P, Radius, Winkel alpha, sin und cos als Strecken
+\einheitskreis[karo=1.5]{140}     Radius in cm (Voreinstellung 2)
+\einheitskreis[ohne]{230}         nur Punkt, Radius und Winkel (Schüler trägt sin/cos ein)
+\begin{ksys}[trigo]               x von -pi/2 bis 2pi in pi/2-Schritten (Karo 1 cm), y von -2 bis 2
+  \sinus{1}{1}{f}                 a*sin(b*x)      \kosinus{2}{0.5}{g}   a*cos(b*x)
+  \hochpunkt{1.5708}{1}{H}        Stellen in Bogenmaß als Dezimalzahl: pi/2 = 1.5708, pi = 3.1416, 2pi = 6.2832
+\end{ksys}
+\begin{ksys}[trigo,xmax=12.5664,ymin=-3,ymax=3]   bis 4pi (vier Nachkommastellen, sonst fehlt die letzte Zahl)
+```
+
+`trigo` ist ein Stil des `ksys` wie `leit`: weitere Schlüssel dahinter überschreiben ihn. Er setzt die x-Zahlen als Vielfache von π (`\tfrac{\pi}{2}`, `\pi`, `\tfrac{3\pi}{2}`); das funktioniert nur mit `xstep=1.5708` oder ganzen Vielfachen davon. Der Einheitskreis beschriftet immer mit α, sin α, cos α und P – für Aufgaben mit konkreten Werten steht die Gradzahl im Aufgabentext.
+
 Noch nicht in Stufe 3
  
-Netze, Zweitafelprojektion, Kreis mit Umfangs- und Mittelpunktswinkel, Strahlensatzfigur, Einheitskreis, Sinuskurve, Zahlenstrahl, Bruchteile, Termbaum; im 3D-System Spurgeraden, Ebenen ohne Achsenabschnitte, Kegel/Kugel/Zylinder – Bausteinliste Stufe 3.
+Zweitafelprojektion; im 3D-System Spurgeraden, Ebenen ohne Achsenabschnitte, Kegel/Kugel/Zylinder. Die Bausteinliste Stufe 3 ist damit abgearbeitet.
