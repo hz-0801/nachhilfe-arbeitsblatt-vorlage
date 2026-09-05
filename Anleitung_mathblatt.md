@@ -15,9 +15,9 @@ Beschriftungen: Alle Label-Argumente der Grafikmakros – `\gerade`, `\parabel`,
 Grundgerüst
  
 ```
-\blattkopf{Lineare Funktionen}{Lernblatt Teil 1 von 3}   → Thema · Bezeichnung oben links, Seite unten rechts
-\blattkopf*{...}{...}                                    → dazu Sternlegende unten links (wenn \steil/\gzs vorkommt)
-\uebersichtskasten[<Leitgrafik>]{<Formelzeilen>}          → optional; \blattfuss = alter Name für \blattkopf
+\blattfuss{Lineare Funktionen}{Lernblatt Teil 1 von 3}   → Thema · Bezeichnung unten links, Seite unten rechts
+\blattkopf{...}{...} / \blattkopf*{...}{...}              → Alternative: oben links; mit * dazu Sternlegende unten links
+\uebersichtskasten[<Leitgrafik>]{<Formelzeilen> \sternlegende}
 \begin{aufgabe}{Text} ... \end{aufgabe}            → nummeriert, bleibt auf einer Seite
 \begin{teile} \teil ... \steil ... \end{teile}     → a), ☆b)
 \begin{geruest} \gz{a}{$y=2x+3$}{\feld{m}\feld{n}} \gzs{b}{...}{...} \end{geruest}
