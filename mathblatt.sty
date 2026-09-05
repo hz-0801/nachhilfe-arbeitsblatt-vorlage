@@ -1,5 +1,5 @@
 % mathblatt.sty – Vorlage für Nachhilfe-Arbeitsblätter, Stufe 1 (Kern Sek I)
-% Version 2026-09-04e (Listenmakros mnliste, nullstellenliste, punktprobenliste)
+% Version 2026-09-04f (ksys3 und rpunkt: räumliches Koordinatensystem, Kavalierprojektion)
 %
 % Verwendung:  \usepackage{mathblatt}   (Datei neben der .tex-Datei)
 % Kompilieren mit  xelatex  (saubere Schrift, Umlaute, €, Textextraktion);
@@ -401,5 +401,69 @@
     \fi
   \end{axis}
   \end{tikzpicture}}
+
+% ---------------------------------------------------------------------------
+% I  Koordinatensystem 3D (Kavalierprojektion nach Masterprompt §4.5)
+% ---------------------------------------------------------------------------
+% x2 waagerecht, x3 senkrecht, x1 unter 45° nach links unten, halbiert.
+% Bildpunkt von (x1|x2|x3): (x2 - x1/2 | x3 - x1/2). 1 Einheit = 2 Karos.
+% \begin{ksys3}                                        Oberstufe, Achsen x_1,x_2,x_3, Karo 5 mm
+% \begin{ksys3}[x1min=-2,x1max=6,x2min=-3,x2max=6,x3min=-2,x3max=5]   (= Voreinstellung)
+% \begin{ksys3}[xyz]                                   Sek I: Achsen x,y,z
+% \begin{ksys3}[...,karo=0.4]                          Karo = Kantenlänge einer Gitterzelle in cm
+% \begin{ksys3}[...,x1schritt=2]                       x1 nur bei 2, 4, 6 beziffert (bei engem System)
+%   \rpunkt{4}{4}{3}{A}               Punkt mit Lot: entlang x1, dann parallel x2, dann parallel x3
+%   \rpunkt[below right]{4}{4}{3}{A}  Labelposition wie bei TikZ-Knoten (Voreinstellung above right)
+% \end{ksys3}
+% Das 5-mm-Gitter wird am Ende hinter die ganze gezeichnete Fläche gelegt; Punkte
+% außerhalb der Achsbereiche liegen trotzdem auf Karo, die Achsen enden dann aber vor
+% ihnen. Nicht mit den Körpern aus Abschnitt F auf einem Blatt kombinieren, die haben
+% eine andere Blickrichtung (Tiefe nach rechts oben).
+\pgfdeclarelayer{mbhinten}
+\pgfkeys{/ksys3/.is family, /ksys3,
+  x1min/.estore in=\ksamin, x1max/.estore in=\ksamax,
+  x2min/.estore in=\ksbmin, x2max/.estore in=\ksbmax,
+  x3min/.estore in=\kscmin, x3max/.estore in=\kscmax,
+  karo/.estore in=\ksdkaro, x1schritt/.estore in=\ksaschritt,
+  x1name/.estore in=\ksaname, x2name/.estore in=\ksbname, x3name/.estore in=\kscname,
+  xyz/.style={x1name=x,x2name=y,x3name=z},
+  default/.style={x1min=-2,x1max=6,x2min=-3,x2max=6,x3min=-2,x3max=5,karo=0.5,x1schritt=1,
+                  x1name=x_1,x2name=x_2,x3name=x_3}}
+% Gitter über die gesamte gezeichnete Fläche, auf Karo-Vielfache gerastert, ein Karo Rand
+\newcommand{\mbdreigitter}{%
+  \path (current bounding box.south west); \pgfgetlastxy{\mbbxa}{\mbbya}%
+  \path (current bounding box.north east); \pgfgetlastxy{\mbbxb}{\mbbyb}%
+  \pgfmathsetlengthmacro{\mbgxa}{(floor(\mbbxa/(\ksdkaro cm)+0.001)-1)*\ksdkaro cm}%
+  \pgfmathsetlengthmacro{\mbgya}{(floor(\mbbya/(\ksdkaro cm)+0.001)-1)*\ksdkaro cm}%
+  \pgfmathsetlengthmacro{\mbgxb}{(ceil(\mbbxb/(\ksdkaro cm)-0.001)+1)*\ksdkaro cm}%
+  \pgfmathsetlengthmacro{\mbgyb}{(ceil(\mbbyb/(\ksdkaro cm)-0.001)+1)*\ksdkaro cm}%
+  \begin{pgfonlayer}{mbhinten}
+    \draw[mbgitter,line width=0.3pt] (\mbgxa,\mbgya) grid[step=\ksdkaro cm] (\mbgxb,\mbgyb);
+  \end{pgfonlayer}}
+\newenvironment{ksys3}[1][]{%
+  \pgfkeys{/ksys3,default,#1}%
+  \pgfmathsetmacro{\ksde}{2*\ksdkaro}% Einheit in cm
+  \pgfmathsetmacro{\ksapfeil}{\ksamax+0.7}% 0.7 Einheiten schräg = 0.5 Einheiten Sichtlänge
+  \pgfmathsetmacro{\ksbpfeil}{\ksbmax+0.5}%
+  \pgfmathsetmacro{\kscpfeil}{\kscmax+0.5}%
+  \pgfsetlayers{mbhinten,main}%
+  \begin{tikzpicture}[x={(-\ksdkaro cm,-\ksdkaro cm)},y={(\ksde cm,0cm)},z={(0cm,\ksde cm)},
+      baseline=(current bounding box.north),execute at end picture={\mbdreigitter}]
+    \draw[-{Stealth[length=2mm]},line width=0.6pt] (\ksamin,0,0) -- (\ksapfeil,0,0) node[below left] {\small$\ksaname$};
+    \draw[-{Stealth[length=2mm]},line width=0.6pt] (0,\ksbmin,0) -- (0,\ksbpfeil,0) node[right] {\small$\ksbname$};
+    \draw[-{Stealth[length=2mm]},line width=0.6pt] (0,0,\kscmin) -- (0,0,\kscpfeil) node[above] {\small$\kscname$};
+    \foreach \a in {\ksamin,...,\ksamax}{\ifdim \a pt=0pt\else
+      \pgfmathtruncatemacro{\mbrest}{mod(\a,\ksaschritt)}%
+      \draw ($(\a,0,0)+(-0.85mm,0.85mm)$) -- ($(\a,0,0)+(0.85mm,-0.85mm)$)
+        \ifnum\mbrest=0 node[below,inner sep=1.5pt] {\scriptsize$\pgfmathprintnumber{\a}$}\fi;\fi}
+    \foreach \b in {\ksbmin,...,\ksbmax}{\ifdim \b pt=0pt\else
+      \draw (0,\b,0.12) -- (0,\b,-0.12) node[below] {\scriptsize$\pgfmathprintnumber{\b}$};\fi}
+    \foreach \c in {\kscmin,...,\kscmax}{\ifdim \c pt=0pt\else
+      \draw (0,0.12,\c) -- (0,-0.12,\c) node[left] {\scriptsize$\pgfmathprintnumber{\c}$};\fi}
+}{\end{tikzpicture}}
+% Objekte im ksys3
+\NewDocumentCommand{\rpunkt}{O{above right} m m m m}{%
+  \draw[dashed,line width=0.5pt] (0,0,0) -- (#2,0,0) -- (#2,#3,0) -- (#2,#3,#4);
+  \fill (#2,#3,#4) circle (1.6pt) node[#1,font=\small] {$#5$};}
 
 \endinput
