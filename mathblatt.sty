@@ -1,5 +1,5 @@
 % mathblatt.sty – Vorlage für Nachhilfe-Arbeitsblätter, Stufe 3 (Sek I und Oberstufe)
-% Version 2026-09-05g (Stufe 2: ksys-leit, Achsenzahlen, teil-Zaehler, Koerper, rquader/rpyramide,
+% Version 2026-09-05h (Stufe 2: ksys-leit, Achsenzahlen, teil-Zaehler, Koerper, rquader/rpyramide,
 %                      boxplots, histogramm, kreis, Winkelfiguren, Dezimalkomma;
 %                      Block 5 Analysis: ableitungspaar, flaeche, flaechezwischen, tangentean,
 %                      hochpunkt/tiefpunkt/wendepunkt, asymptote; Kurvenlabel neu positioniert;
@@ -8,7 +8,9 @@
 %                      Block 7 Geometrie: viereck (+parallelogramm, rechteck, trapez, raute, drachen),
 %                      Netze, strahlensatz, mittelpunktswinkel, umfangswinkel;
 %                      Block 8 Zahlen/Trigo: zahlenstrahl, zahlengerade+intervall, bruchkreis,
-%                      bruchrechteck, termbaum, einheitskreis, ksys[trigo], sinus, kosinus)
+%                      bruchrechteck, termbaum, einheitskreis, ksys[trigo], sinus, kosinus;
+%                      05h: \x in Nutzertermen geklammert (\x^2 bei x<0), Baumlabels frei,
+%                      Radius-/Durchmesser-/Sehnenlabel neben der Linie)
 %
 % Verwendung:  \usepackage{mathblatt}   (Datei neben der .tex-Datei)
 % Kompilieren mit  xelatex  (saubere Schrift, Umlaute, €, Textextraktion);
@@ -17,7 +19,7 @@
 % Inhalt; Layout, Grafikgrößen und Ausrichtung sind hier festgelegt.
 %
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{mathblatt}[2026/09/05 Nachhilfe-Arbeitsblatt 2026-09-05g]
+\ProvidesPackage{mathblatt}[2026/09/05 Nachhilfe-Arbeitsblatt 2026-09-05h]
 
 \RequirePackage[a4paper,margin=18mm,top=16mm,bottom=18mm]{geometry}
 \RequirePackage{iftex}
@@ -316,6 +318,10 @@
   \draw[line width=0.8pt,domain=\ksxmin:\ksxmax,samples=80,smooth] plot (\x,{#1*(\x-#2)^2+#3});
   \mbfunklabel{(#1)*(\x-(#2))^2+(#3)}{#4}{\ksxmin}{\ksxmax}%
   \fill (#2,#3) circle (1.4pt);}
+% Nutzerterme in \x: pgfmath rechnet -2^2 = -4, deshalb wird \x als geklammerter Wert (\mbt)
+% eingesetzt. Alle plot-Aufrufe mit Nutzertermen laufen über mbterm und \mbxsicher.
+\tikzset{mbterm/.style={variable=\mbt}}
+\newcommand{\mbxsicher}{\def\x{(\mbt)}}
 % Kurvenlabel: pos= auf plot-Pfaden ist unzuverlässig, deshalb sucht \mbfunklabel vom rechten
 % Rand aus die erste Stelle, an der der Graph innerhalb der Zeichenfläche liegt (40 Schritte).
 \newcommand{\mbfunklabel}[4]{% Term, Label, von, bis
@@ -333,10 +339,12 @@
       \node[fill=white,inner sep=1pt,font=\small] at (\mbfx,\mbfy) {$#2$};
     \else\PackageWarning{mathblatt}{Label #2: Graph liegt im Bereich nicht in der Zeichenflaeche}\fi}}
 \newcommand{\funktion}[2]{%
-  \draw[line width=0.8pt,domain=\ksxmin:\ksxmax,samples=120,smooth] plot (\x,{#1});
+  \begingroup\mbxsicher
+  \draw[mbterm,line width=0.8pt,domain=\ksxmin:\ksxmax,samples=120,smooth] plot (\mbt,{#1});\endgroup
   \mbfunklabel{#1}{#2}{\ksxmin}{\ksxmax}}
 \newcommand{\funktionab}[4]{% Term, Label, von, bis  (bei Definitionslücken)
-  \draw[line width=0.8pt,domain=#3:#4,samples=120,smooth] plot (\x,{#1});
+  \begingroup\mbxsicher
+  \draw[mbterm,line width=0.8pt,domain=#3:#4,samples=120,smooth] plot (\mbt,{#1});\endgroup
   \mbfunklabel{#1}{#2}{#3}{#4}}
 % Zwei Systeme nebeneinander: \ksysabstand dazwischen
 \newcommand{\ksysabstand}{\hspace{1.0cm}}
@@ -510,14 +518,13 @@
 %   \baumzwei{R/,B/}{R/,B/}{R/,B/}
 \NewDocumentCommand{\baumzwei}{m m m}{%
   \begin{tikzpicture}[baseline=(current bounding box.north),line width=0.6pt,
-     ast/.style={font=\small}, wk/.style={font=\scriptsize,fill=white,inner sep=1pt}]
+     ast/.style={font=\small,inner sep=1.5pt}, wk/.style={font=\scriptsize,fill=white,inner sep=1pt}]
     \coordinate (S) at (0,0);
     \def\mbi{0}
     \foreach \l/\p [count=\i] in {#1}{%
       \pgfmathsetmacro{\yy}{2.2-2.2*\i+1.1}
-      \coordinate (E\i) at (2.4,\yy);
+      \node[ast] (E\i) at (2.4,\yy) {$\l$};
       \draw (S) -- (E\i) node[wk,pos=0.5] {\ifx\p\empty\underline{\hspace{5mm}}\else$\p$\fi};
-      \node[ast] at (E\i) {$\l$};
       \ifnum\i=1 \foreach \m/\q [count=\j] in {#2}{%
          \pgfmathsetmacro{\zz}{\yy+0.55-1.1*(\j-1)}
          \draw (E\i) -- (4.8,\zz) node[wk,pos=0.5] {\ifx\q\empty\underline{\hspace{5mm}}\else$\q$\fi}
@@ -674,13 +681,13 @@
   \mbklabel{#3}{({#2}:{\krr+0.3})}{#1}}
 \newcommand{\radius}[2]{%
   \draw[line width=0.7pt] (0,0) -- (#1:\krr);
-  \mbklabel{#2}{({#1}:{0.55*\krr})}{fill=white,inner sep=1pt}}
+  \mbklabel{#2}{($({#1}:{0.55*\krr})+({#1-90}:0.22)$)}{inner sep=1pt}}
 \newcommand{\durchmesser}[2]{%
   \draw[line width=0.7pt] ({#1+180}:\krr) -- (#1:\krr);
-  \mbklabel{#2}{({#1}:{0.6*\krr})}{fill=white,inner sep=1pt}}
+  \mbklabel{#2}{($({#1}:{0.6*\krr})+({#1+90}:0.22)$)}{inner sep=1pt}}
 \newcommand{\sehne}[3]{%
   \draw[line width=0.7pt] (#1:\krr) -- (#2:\krr);
-  \mbklabel{#3}{($0.5*(#1:\krr)+0.5*(#2:\krr)$)}{fill=white,inner sep=1pt}}
+  \mbklabel{#3}{($0.5*(#1:\krr)+0.5*(#2:\krr)+({(#1+#2)/2}:0.22)$)}{inner sep=1pt}}
 % Tangente: Beruehrpunkt bei #1, rechter Winkel zum Radius markiert
 \newcommand{\tangente}[2]{%
   \pgfmathsetmacro{\krl}{0.85*\krr}%
@@ -926,16 +933,18 @@
   \end{tikzpicture}}
 % Flächen: Rand des Graphen durchgezogen, Begrenzungen bei a und b dünn; Label in der Mitte.
 \NewDocumentCommand{\flaeche}{m m m m}{%
-  \fill[mbgrau,fill opacity=0.3] plot[domain=#2:#3,samples=80,smooth] (\x,{#1}) -- (#3,0) -- (#2,0) -- cycle;
-  \draw[line width=0.4pt] plot[domain=#2:#3,samples=80,smooth] (\x,{#1}) -- (#3,0) -- (#2,0) -- cycle;
+  \begingroup\mbxsicher
+  \fill[mbgrau,fill opacity=0.3] plot[mbterm,domain=#2:#3,samples=80,smooth] (\mbt,{#1}) -- (#3,0) -- (#2,0) -- cycle;
+  \draw[line width=0.4pt] plot[mbterm,domain=#2:#3,samples=80,smooth] (\mbt,{#1}) -- (#3,0) -- (#2,0) -- cycle;\endgroup
   \ifblank{#4}{}{%
     \begingroup\def\x{(((#2)+(#3))/2)}\pgfmathparse{#1}\global\let\mbfm\pgfmathresult\endgroup
     \node[font=\small] at ({((#2)+(#3))/2},{\mbfm/2}) {$#4$};}}
 \NewDocumentCommand{\flaechezwischen}{m m m m m}{%
-  \fill[mbgrau,fill opacity=0.3] plot[domain=#3:#4,samples=80,smooth] (\x,{#1})
-    -- plot[domain=#4:#3,samples=80,smooth] (\x,{#2}) -- cycle;
-  \draw[line width=0.4pt] plot[domain=#3:#4,samples=80,smooth] (\x,{#1})
-    -- plot[domain=#4:#3,samples=80,smooth] (\x,{#2}) -- cycle;
+  \begingroup\mbxsicher
+  \fill[mbgrau,fill opacity=0.3] plot[mbterm,domain=#3:#4,samples=80,smooth] (\mbt,{#1})
+    -- plot[mbterm,domain=#4:#3,samples=80,smooth] (\mbt,{#2}) -- cycle;
+  \draw[line width=0.4pt] plot[mbterm,domain=#3:#4,samples=80,smooth] (\mbt,{#1})
+    -- plot[mbterm,domain=#4:#3,samples=80,smooth] (\mbt,{#2}) -- cycle;\endgroup
   \ifblank{#5}{}{%
     \begingroup\def\x{(((#3)+(#4))/2)}\pgfmathparse{#1}\global\let\mbfm\pgfmathresult
       \pgfmathparse{#2}\global\let\mbgm\pgfmathresult\endgroup
@@ -983,7 +992,8 @@
     \draw[dashed,line width=0.5pt] (\mbasr,\ksymin) -- (\mbasr,\ksymax);
     \ifblank{#2}{}{\node[right,font=\small,fill=white,inner sep=1pt] at (\mbasr,{\ksymax-0.7*\ksystep}) {$#2$};}%
   \else
-    \draw[dashed,line width=0.5pt,domain=\ksxmin:\ksxmax,samples=40] plot (\x,{\mbasr});
+    \begingroup\mbxsicher
+    \draw[mbterm,dashed,line width=0.5pt,domain=\ksxmin:\ksxmax,samples=40] plot (\mbt,{\mbasr});\endgroup
     \pgfmathsetmacro{\mbasx}{\ksxmax-0.15*(\ksxmax-\ksxmin)}%
     \mbfunklabel{\mbasr}{#2}{\ksxmin}{\mbasx}%
   \fi}
@@ -1001,12 +1011,11 @@
   \foreach \l/\p [count=\mbc] in #4{%
     \pgfmathsetmacro{\yy}{#2+#5*((\mban+1)/2-\mbc)}%
     \expandafter\xdef\csname mby#6\mbc\endcsname{\yy}%
-    \coordinate (#6\mbc) at (#3,\yy);
-    \draw (#1) -- (#6\mbc) node[wk,pos=0.5] {\ifx\p\empty\underline{\hspace{5mm}}\else$\p$\fi};
-    \node[ast] at (#6\mbc) {$\l$};}}
+    \node[ast] (#6\mbc) at (#3,\yy) {$\l$};
+    \draw (#1) -- (#6\mbc) node[wk,pos=0.5] {\ifx\p\empty\underline{\hspace{5mm}}\else$\p$\fi};}}
 \NewDocumentCommand{\baumdrei}{m m m m m m m}{%
   \begin{tikzpicture}[baseline=(current bounding box.north),line width=0.6pt,
-     ast/.style={font=\small,fill=white,inner sep=1.5pt}, wk/.style={font=\scriptsize,fill=white,inner sep=1pt}]
+     ast/.style={font=\small,inner sep=1.5pt}, wk/.style={font=\scriptsize,fill=white,inner sep=1pt}]
     \coordinate (S) at (0,0);
     \mbaeste{S}{0}{2.4}{{#1}}{3}{A}%
     \foreach \i in {1,2}{\ifnum\i=1 \def\mbl{#2}\else\def\mbl{#3}\fi
