@@ -1,4 +1,5 @@
 % mathblatt.sty – Vorlage für Nachhilfe-Arbeitsblätter, Stufe 3 (Sek I und Oberstufe)
+% Version 2026-09-06e (wertetabelle: leere Einträge in der Werteliste ergeben leere Felder; sonst wie d)
 % Version 2026-09-06d (blattkopf*: Legendentext als drittes Argument, kein Text mehr in der Vorlage; sonst wie c)
 % Version 2026-09-06c (neu: blattkopf mit Sternlegende, weit/eng, kreissektor, leerfeld; Reparaturen: kreisdiagramm-Überlauf, schritte-Zähler, geruest-Umbruch; blattfuss unverändert)
 % Version 2026-09-05i (Stufe 2: ksys-leit, Achsenzahlen, teil-Zaehler, Koerper, rquader/rpyramide,
@@ -22,7 +23,7 @@
 % Inhalt; Layout, Grafikgrößen und Ausrichtung sind hier festgelegt.
 %
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{mathblatt}[2026/09/06 Nachhilfe-Arbeitsblatt 2026-09-06d]
+\ProvidesPackage{mathblatt}[2026/09/06 Nachhilfe-Arbeitsblatt 2026-09-06e]
 
 \RequirePackage[a4paper,margin=18mm,top=16mm,bottom=18mm]{geometry}
 \RequirePackage{iftex}
@@ -218,12 +219,13 @@
 % ---------------------------------------------------------------------------
 % \wertetabelle{x}{y}{-2,-1,0,1,2}        → x-Zeile vorgegeben, y-Zeile leer
 % \wertetabelle[7,4,1,-2]{x}{f(x)}{-2,-1,0,1,2}  → gefüllt (Begleitteil)
+% \wertetabelle[,4,,-2]{x}{f(x)}{-2,-1,0,1,2}    → teilweise gefüllt: leerer Eintrag = leeres Feld
 \newlength{\mbzell}\setlength{\mbzell}{1.1cm}
 \newlength{\mbzeile}\setlength{\mbzeile}{0.75cm}
 \NewDocumentCommand{\wertetabelle}{o m m m}{%
   \def\mbkopf{}\def\mbwerte{}\def\mbleer{}\setcounter{mbn}{0}%
   \foreach \v in {#4}{\xappto\mbkopf{& $\v$}\xappto\mbleer{& }\stepcounter{mbn}\xdef\mbnn{\arabic{mbn}}}%
-  \IfNoValueTF{#1}{}{\foreach \v in {#1}{\xappto\mbwerte{& $\v$}}}%
+  \IfNoValueTF{#1}{}{\foreach \v in {#1}{\ifdefempty{\v}{\xappto\mbwerte{& }}{\xappto\mbwerte{& $\v$}}}}%
   \begingroup\renewcommand{\arraystretch}{1.3}%
   \edef\mbpre{|>{\noexpand\columncolor{mbkasten}}c|*{\mbnn}{>{\noexpand\centering\noexpand\arraybackslash}p{\noexpand\mbzell}|}}%
   \expandafter\mbtabstart\expandafter{\mbpre}\hline
