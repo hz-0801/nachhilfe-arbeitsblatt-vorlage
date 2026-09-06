@@ -1,5 +1,5 @@
 % mathblatt.sty – Vorlage für Nachhilfe-Arbeitsblätter, Stufe 3 (Sek I und Oberstufe)
-% Version 2026-09-06a (neu: blattkopf mit Sternlegende; Reparaturen: kreisdiagramm-Überlauf, schritte-Zähler, geruest-Umbruch; blattfuss unverändert)
+% Version 2026-09-06b (neu: blattkopf mit Sternlegende, kreissektor, leerfeld; Reparaturen: kreisdiagramm-Überlauf, schritte-Zähler, geruest-Umbruch; blattfuss unverändert)
 % Version 2026-09-05i (Stufe 2: ksys-leit, Achsenzahlen, teil-Zaehler, Koerper, rquader/rpyramide,
 %                      boxplots, histogramm, kreis, Winkelfiguren, Dezimalkomma;
 %                      Block 5 Analysis: ableitungspaar, flaeche, flaechezwischen, tangentean,
@@ -21,7 +21,7 @@
 % Inhalt; Layout, Grafikgrößen und Ausrichtung sind hier festgelegt.
 %
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{mathblatt}[2026/09/06 Nachhilfe-Arbeitsblatt 2026-09-06a]
+\ProvidesPackage{mathblatt}[2026/09/06 Nachhilfe-Arbeitsblatt 2026-09-06b]
 
 \RequirePackage[a4paper,margin=18mm,top=16mm,bottom=18mm]{geometry}
 \RequirePackage{iftex}
@@ -140,6 +140,8 @@
 % Antwortfeld: \feld{m} → "m = ____"   ;  \feldx{x_0}  (Mathe-Bezeichner)
 \newcommand{\feld}[1]{\ensuremath{#1 = \underline{\hspace{1.4cm}}}\hspace{0.8em}}
 \newcommand{\feldl}[1]{\ensuremath{#1 = \underline{\hspace{2.6cm}}}\hspace{0.8em}}
+% Leeres Feld ohne Bezeichner und ohne Gleichheitszeichen: \leerfeld  (nach eigenem Text wie „alter Preis:")
+\newcommand{\leerfeld}{\underline{\hspace{1.4cm}}\hspace{0.8em}}
 \newcommand{\punktfeld}{\ensuremath{S(\underline{\hspace{0.8cm}}\,|\,\underline{\hspace{0.8cm}})}}
 
 % Antwortgerüst in Fluchten: Umgebung geruest, Zeilen mit \gz{a}{Aufgabentext}{Felder}
@@ -152,7 +154,7 @@
 % Aufgabentext länger als \mbgzmax (Satzspiegel minus 6 cm für die Felder) wird umbrochen.
 \newlength{\mbgzmax}\newlength{\mbgzw}
 \newcommand{\mbgztext}[1]{\setlength{\mbgzmax}{\dimexpr\linewidth-6cm\relax}\settowidth{\mbgzw}{#1}%
-  \ifdim\mbgzw>\mbgzmax\parbox[t]{\mbgzmax}{\raggedright #1}\else #1\fi}
+  \ifdim\mbgzw>\mbgzmax\parbox[t]{\mbgzmax}{\strut\raggedright #1\strut\vspace{2pt}}\else #1\fi}
 \newcommand{\gz}[3]{\stepcounter{teil}#1) & \mbgztext{#2} & #3 \\}
 \newcommand{\gzs}[3]{\stepcounter{teil}$\star$\,#1) & \mbgztext{#2} & #3 \\}
 
@@ -1060,6 +1062,18 @@
           \node[font=\small,anchor={\mbwm+180}] at (\mbwm:{#1+0.3}) {\l};}
         \xdef\mbwa{\mbwb}}%
       \draw (0,0) circle (#1);}
+  \end{tikzpicture}}
+
+% \kreissektor[r]{Winkel}{Label}   Kreis mit Mittelpunkt M und einem grau gefüllten Sektor von Winkel Grad,
+%   beginnend oben, im Uhrzeigersinn; Label (z. B. 135°) im Sektor. Radius in cm, Voreinstellung 1.8.
+\NewDocumentCommand{\kreissektor}{O{1.8} m m}{%
+  \begin{tikzpicture}[baseline=(current bounding box.north),line width=0.6pt]
+    \edef\mbwe{\fpeval{90-#2}}%
+    \filldraw[fill=black!15] (0,0) -- (90:#1) arc (90:\mbwe:#1) -- cycle;
+    \draw (0,0) circle (#1); \fill (0,0) circle (1.4pt);
+    \node[below left,font=\small] at (0,0) {$M$};
+    \edef\mbwm{\fpeval{90-#2/2}}%
+    \node[font=\small] at (\mbwm:{#1*0.6}) {#3};
   \end{tikzpicture}}
 
 % \vierfeldertafel{A}{B}{n11,n12,n1s,n21,n22,n2s,ns1,ns2,n}   zeilenweise: B / nicht B / Summe,

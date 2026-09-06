@@ -1,5 +1,5 @@
 mathblatt.sty – Anleitung (Stufe 3)
-Gehört zu Vorlagenversion 2026-09-06a. Die Version steht in Zeile 2 der `mathblatt.sty`. Weichen beide ab, gilt die Vorlage: Makros, die sie nicht kennt, benutzt du nicht, und du meldest die Abweichung in einer Zeile im Ausgabeblock.
+Gehört zu Vorlagenversion 2026-09-06b. Die Version steht in Zeile 2 der `mathblatt.sty`. Weichen beide ab, gilt die Vorlage: Makros, die sie nicht kennt, benutzt du nicht, und du meldest die Abweichung in einer Zeile im Ausgabeblock.
  
 Datei `mathblatt.sty` neben die .tex-Datei legen, `\usepackage{mathblatt}` im Kopf. Kompilieren mit `xelatex` (nicht pdflatex): nur so sind Umlaute, ß, € und die Textextraktion sauber, weil im Sandbox keine Type-1-T1-Schriften liegen. Das Modell schreibt nur Inhalt; Ränder, Karogrößen, Fluchten, Kopf- und Fußzeile sind fest.
  
@@ -21,6 +21,7 @@ Grundgerüst
 \begin{aufgabe}{Text} ... \end{aufgabe}            → nummeriert, bleibt auf einer Seite
 \begin{teile} \teil ... \steil ... \end{teile}     → a), ☆b)
 \begin{geruest} \gz{a}{$y=2x+3$}{\feld{m}\feld{n}} \gzs{b}{...}{...} \end{geruest}
+\feld{W} → „W = ___"; \leerfeld → „___" ohne Bezeichner (nie \feld{} – das ergibt „= ___")
 \feld{m}  \feldl{y}  \punktfeld  \janein  \kreuz{Text}
 \mnliste[9]{2x+3, 5x-1, ...}            m und n je Gerade, eine Zeile statt geruest
 \nullstellenliste[7]{x-4, 2x-6, ...}    x_0 je Gerade
@@ -171,6 +172,7 @@ Stochastik
 \kreisdiagramm{Bus 40 \%/40, Rad 25 \%/25, Auto 20 \%/20, zu Fuß 15 \%/15}
 \kreisdiagramm[1.2]{A/3, B/5, /2}       Radius in cm (Voreinstellung 1,8); leeres Label = Sektor ohne Text
 \kreisdiagramm{}                         leerer Kreis mit Mittelpunkt (Schüler zeichnet)
+\kreissektor{135}{135°}                  Kreis mit einem grauen Sektor von 135° ab oben, Label im Sektor
 \vierfeldertafel{A}{B}{20,30,50,10,40,50,30,70,100}   zeilenweise B, nicht B, Summe; leere Einträge frei
 \vierfeldertafel{A}{B}{}                 alle Felder leer
 \binomialverteilung{10}{0.3}                                  Stabdiagramm P(X=k), k = 0..n
@@ -183,7 +185,7 @@ Stochastik
 
 `\baumdrei` hat sieben Listen: erste Stufe, zweite Stufe nach dem ersten und zweiten Ast, dritte Stufe nach den vier Pfaden in der Reihenfolge 1-1, 1-2, 2-1, 2-2. Bei gleichen Wahrscheinlichkeiten auf allen Stufen genügt `\baumdreigleich` mit einer Liste. Zwei Äste je Stufe; der Baum ist rund 8 cm breit und 5,5 cm hoch, zwei nebeneinander passen.
 
-Beim `\kreisdiagramm` bestimmen die Werte nur die Winkel; ob du Prozent oder absolute Zahlen gibst, ist gleich. Was am Sektor stehen soll, schreibst du selbst ins Label, im Textmodus (`Bus 40 \%`). Die Sektoren beginnen oben und laufen im Uhrzeigersinn, in vier wechselnden Grautönen. Die Labels stehen außen; bei vielen kleinen Sektoren nebeneinander überlappen sie, dann `{}` und eine Legende im Text. Sektoren über 50 % sind seit 2026-09-06a möglich.
+Beim `\kreisdiagramm` bestimmen die Werte nur die Winkel; ob du Prozent oder absolute Zahlen gibst, ist gleich. Was am Sektor stehen soll, schreibst du selbst ins Label, im Textmodus (`Bus 40 \%`). Die Sektoren beginnen oben und laufen im Uhrzeigersinn, in vier wechselnden Grautönen. Die Labels stehen außen; bei vielen kleinen Sektoren nebeneinander überlappen sie, dann `{}` und eine Legende im Text. Sektoren über 50 % sind seit 2026-09-06a möglich. Ein einzelner grauer Sektor mit Winkelangabe (Aufgabe „Anteil des Sektors"): `\kreissektor`.
 
 Die `\vierfeldertafel` nimmt die Merkmale A (Spalten) und B (Zeilen); die Gegenereignisse setzt sie selbst mit Überstrich. Die neun Werte stehen zeilenweise: erst die Zeile B (A, nicht A, Summe), dann nicht B, dann die Summenzeile. Alle neun Kommas müssen stehen, auch wenn Einträge leer bleiben. Werte im Mathemodus, Dezimalkomma als `0{,}2`.
 
