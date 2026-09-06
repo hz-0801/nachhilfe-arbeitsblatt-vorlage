@@ -1,5 +1,6 @@
 % mathblatt.sty – Vorlage für Nachhilfe-Arbeitsblätter, Stufe 3 (Sek I und Oberstufe)
-% Version 2026-09-06b (neu: blattkopf mit Sternlegende, kreissektor, leerfeld; Reparaturen: kreisdiagramm-Überlauf, schritte-Zähler, geruest-Umbruch; blattfuss unverändert)
+% Version 2026-09-06d (blattkopf*: Legendentext als drittes Argument, kein Text mehr in der Vorlage; sonst wie c)
+% Version 2026-09-06c (neu: blattkopf mit Sternlegende, weit/eng, kreissektor, leerfeld; Reparaturen: kreisdiagramm-Überlauf, schritte-Zähler, geruest-Umbruch; blattfuss unverändert)
 % Version 2026-09-05i (Stufe 2: ksys-leit, Achsenzahlen, teil-Zaehler, Koerper, rquader/rpyramide,
 %                      boxplots, histogramm, kreis, Winkelfiguren, Dezimalkomma;
 %                      Block 5 Analysis: ableitungspaar, flaeche, flaechezwischen, tangentean,
@@ -21,7 +22,7 @@
 % Inhalt; Layout, Grafikgrößen und Ausrichtung sind hier festgelegt.
 %
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{mathblatt}[2026/09/06 Nachhilfe-Arbeitsblatt 2026-09-06b]
+\ProvidesPackage{mathblatt}[2026/09/06 Nachhilfe-Arbeitsblatt 2026-09-06d]
 
 \RequirePackage[a4paper,margin=18mm,top=16mm,bottom=18mm]{geometry}
 \RequirePackage{iftex}
@@ -71,14 +72,21 @@
   \fancyfoot[R]{\footnotesize\color{mbgrau}Seite \thepage}%
 }
 % \blattkopf{Prozentrechnung}{Themenheft}   Alternative: Thema · Bezeichnung oben links, Seite unten rechts;
-%   \blattkopf*{...}{...} setzt zusätzlich die Sternlegende unten links. Für Prompts, die es verlangen.
+%   \blattkopf*{...}{...}{$\star$ = Prüfungsaufgabe} setzt zusätzlich die Legende unten links; den Text
+%   liefert der Aufruf (Mathemodus für den Stern), die Vorlage enthält keinen Legendentext.
+% \weit   Schalter: Teilaufgaben- und Gerüstzeilen im Aufgabenteil um ein Drittel weiter; vor der ersten
+%   Aufgabe setzen. Wirkt nicht auf Begleitteil und Hilfe-Seite (\eng setzt zurück). Voreinstellung: eng.
+\newcommand{\weit}{\renewcommand{\arraystretch}{1.35}\setlength{\mbteilsep}{4pt}}
+\newcommand{\eng}{\renewcommand{\arraystretch}{1.0}\setlength{\mbteilsep}{0pt}}
+\newlength{\mbteilsep}\setlength{\mbteilsep}{0pt}
 \NewDocumentCommand{\blattkopf}{s m m}{%
   \pagestyle{fancy}\fancyhf{}%
   \renewcommand{\headrulewidth}{0pt}%
   \fancyhead[L]{\footnotesize\color{mbgrau}#2 \,\textperiodcentered\, #3}%
-  \IfBooleanT{#1}{\fancyfoot[L]{\footnotesize\color{mbgrau}$\star$ = anspruchsvoll, darf übersprungen werden}}%
   \fancyfoot[R]{\footnotesize\color{mbgrau}Seite \thepage}%
+  \IfBooleanT{#1}{\mbblattkopflegende}%
 }
+\NewDocumentCommand{\mbblattkopflegende}{m}{\fancyfoot[L]{\footnotesize\color{mbgrau}#1}}
 
 % Übersichtskasten: \uebersichtskasten{Text}  oder  \uebersichtskasten[Grafik]{Text}
 % Mit Grafik: Text links (60 %), Grafik rechts, beide oben bündig.
@@ -127,7 +135,7 @@
 \newcommand{\mbteilstart}{\ifmbinaufgabe\else\setcounter{teil}{0}\fi}
 \newenvironment{teile}{\mbteilstart\par\nopagebreak
   \begin{list}{}{\setlength{\leftmargin}{1.6em}\setlength{\labelwidth}{1.4em}
-   \setlength{\labelsep}{0.2em}\setlength{\itemsep}{0pt}\setlength{\parsep}{0pt}
+   \setlength{\labelsep}{0.2em}\setlength{\itemsep}{\mbteilsep}\setlength{\parsep}{0pt}
    \setlength{\topsep}{1pt}}}{\end{list}}
 \newcommand{\teil}{\stepcounter{teil}\item[\alph{teil})]}
 \newcommand{\steil}{\stepcounter{teil}\item[$\star$\,\alph{teil})]}
@@ -191,9 +199,9 @@
 \newcommand{\kreuz}[1]{$\square$ #1\quad}
 
 % Begleitteil / Hilfe
-\newcommand{\begleitteil}{\clearpage\setcounter{aufgabe}{0}%
+\newcommand{\begleitteil}{\clearpage\eng\setcounter{aufgabe}{0}%
   \section*{\normalsize Ergebnisse}}
-\newcommand{\hilfeseite}{\clearpage\section*{\normalsize Hilfe: Lösungsstrategie}}
+\newcommand{\hilfeseite}{\clearpage\eng\section*{\normalsize Hilfe: Lösungsstrategie}}
 \newcommand{\verfahren}[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
 \newcounter{schritt}
 \newenvironment{schritte}{\begin{list}{}{\setlength{\leftmargin}{1.6em}\setlength{\labelwidth}{1.4em}

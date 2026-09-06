@@ -1,5 +1,5 @@
 mathblatt.sty – Anleitung (Stufe 3)
-Gehört zu Vorlagenversion 2026-09-06b. Die Version steht in Zeile 2 der `mathblatt.sty`. Weichen beide ab, gilt die Vorlage: Makros, die sie nicht kennt, benutzt du nicht, und du meldest die Abweichung in einer Zeile im Ausgabeblock.
+Gehört zu Vorlagenversion 2026-09-06d. Die Version steht in Zeile 2 der `mathblatt.sty`. Weichen beide ab, gilt die Vorlage: Makros, die sie nicht kennt, benutzt du nicht, und du meldest die Abweichung in einer Zeile im Ausgabeblock.
  
 Datei `mathblatt.sty` neben die .tex-Datei legen, `\usepackage{mathblatt}` im Kopf. Kompilieren mit `xelatex` (nicht pdflatex): nur so sind Umlaute, ß, € und die Textextraktion sauber, weil im Sandbox keine Type-1-T1-Schriften liegen. Das Modell schreibt nur Inhalt; Ränder, Karogrößen, Fluchten, Kopf- und Fußzeile sind fest.
  
@@ -16,7 +16,8 @@ Grundgerüst
  
 ```
 \blattfuss{Lineare Funktionen}{Lernblatt Teil 1 von 3}   → Thema · Bezeichnung unten links, Seite unten rechts
-\blattkopf{...}{...} / \blattkopf*{...}{...}              → Alternative: oben links; mit * dazu Sternlegende unten links
+\blattkopf{...}{...} / \blattkopf*{...}{...}{$\star$ = ...}  → Alternative: oben links; mit * dazu Legende unten links, Text im dritten Argument
+\weit                                                    → weitere Zeilen im Aufgabenteil (ein Drittel); Begleitteil und Hilfe-Seite setzen selbst auf eng zurück
 \uebersichtskasten[<Leitgrafik>]{<Formelzeilen> \sternlegende}
 \begin{aufgabe}{Text} ... \end{aufgabe}            → nummeriert, bleibt auf einer Seite
 \begin{teile} \teil ... \steil ... \end{teile}     → a), ☆b)
